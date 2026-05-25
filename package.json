@@ -7,5 +7,6 @@
     "build": "node build.js",
     "test": "node --test tests/utils.test.js tests/build.test.js"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "engines": { "node": ">=18" }
 }
