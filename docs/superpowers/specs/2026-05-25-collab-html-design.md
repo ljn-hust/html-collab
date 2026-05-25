@@ -12,7 +12,7 @@
 
 ### Goals
 
-- **Portable**: one `.html` file carries the full context — content + all annotations + editing history
+- **Portable**: one `.html` file carries the full context — content + all annotations + latest inline edits
 - **Zero-dependency viewer**: any Chrome user can open and interact with the file, no install required
 - **AI-native**: the format is designed to be read and written by LLMs, not just humans
 - **Lightweight**: vanilla JS only, no frameworks, no build step required to view
@@ -28,7 +28,7 @@
 
 ## 2. File Format Spec
 
-Every collab-html document is a single `.html` file with three logical layers:
+Every collab-html document is a single `.html` file with four logical layers:
 
 ```
 document.html
@@ -45,7 +45,7 @@ document.html
   <h1>Document Title</h1>
   <p data-cid="p-001">Every block-level element gets a stable content ID.</p>
   <section data-cid="sec-001">
-    <h2>Section Heading</h2>
+    <h2 data-cid="h-001">Section Heading</h2>
     <p data-cid="p-002">Paragraphs, list items, and sections all carry data-cid.</p>
     <ul>
       <li data-cid="li-001">List items too.</li>
@@ -55,11 +55,14 @@ document.html
 ```
 
 **`data-cid` rules:**
-- Format: `<type>-<zero-padded-3-digit-sequence>` (e.g. `p-001`, `sec-002`, `li-003`)
-- Assigned by the LLM at generation time
+- Format: `<type>-<zero-padded-3-digit-sequence>` (e.g. `p-001`, `sec-002`, `h-001`, `li-003`)
+- Assigned by the LLM at generation time; sequential per type across the whole document
 - Must be unique within a document
-- Preserved across revisions — the LLM must not reassign existing CIDs
-- Applied to: `<p>`, `<section>`, `<li>`, `<blockquote>`, `<pre>`, `<table>`
+- Preserved across revisions — the LLM must not reassign or reuse existing CIDs
+- Applied to: `<p>`, `<section>`, `<h1>`–`<h6>`, `<li>`, `<blockquote>`, `<pre>`, `<table>`
+- **Missing `data-cid`**: if the engine encounters a block element without a CID (e.g. hand-edited HTML), it auto-assigns a temporary ID in the format `auto-<index>` and logs a console warning. Temporary IDs are not written back to the file.
+- **Adding blocks in REVISE**: new blocks inserted by the LLM during revision must receive fresh CIDs continuing the highest existing sequence number for that type (e.g. if `p-007` is the highest paragraph ID, the next new paragraph is `p-008`). The LLM must never reuse a CID that appeared in a previous version.
+- **Deleting blocks in REVISE**: the LLM may delete a block to address feedback. Its CID is retired and must never be reused. Any comments or edits targeting a deleted CID are silently dropped when `collab-data` is reset in the new version.
 
 ### 2.2 Data Layer
 
@@ -69,7 +72,8 @@ document.html
   "version": "0.1",
   "meta": {
     "title": "Document Title",
-    "created": "2026-05-25T10:00:00Z",
+    "originalCreated": "2026-05-25T10:00:00Z",
+    "lastRevised": "2026-05-25T12:00:00Z",
     "model": "claude-opus-4",
     "maxImageBytes": 512000,
     "imageStorage": "base64"
@@ -78,7 +82,7 @@ document.html
     {
       "id": "c-001",
       "target": "p-001",
-      "quote": "exact selected text from the paragraph",
+      "quote": "exact selected text (max 500 chars)",
       "text": "Human comment text",
       "images": [
         {
@@ -108,19 +112,25 @@ document.html
 ```
 
 **Schema notes:**
-- `maxImageBytes`: configurable per-document, default `512000` (500 KB). As AI context windows grow, this value can be increased.
-- `imageStorage`: `"base64"` (current default) or `"url"` (future image hosting support)
-- `edits[].original/revised`: only the latest diff per block is retained (no edit history tree)
-- Images array per comment supports multiple screenshots
+- `meta.originalCreated`: set once at GENERATE time, never changed across revisions. At GENERATE time, `originalCreated` and `lastRevised` are set to the same timestamp; they diverge only after the first REVISE cycle.
+- `meta.lastRevised`: updated to current timestamp on every REVISE cycle
+- `meta.model`: the model that produced the current content version
+- `meta.maxImageBytes`: configurable per-document, default `512000` (500 KB). Increase as AI context windows grow.
+- `meta.imageStorage`: `"base64"` (current default) or `"url"` (future image hosting support)
+- `comments[].quote`: the exact selected text at comment time, truncated to 500 characters. Truncation is applied silently; the full selected text is not stored elsewhere.
+- `comments[].author` / `edits[].author`: valid value for v0.1 is `"human"` only. The value `"llm"` is reserved for future use. LLMs do not write comment or edit records — they reset both arrays to `[]` on REVISE.
+- `edits[].original/revised`: only the latest diff per block is retained (no edit history tree). A second edit to the same `data-cid` overwrites the previous record. `original` always holds the text as it existed in the LLM-generated version, not the text from a previous human edit; `revised` is the authoritative final text the LLM should apply.
+- Images array per comment supports multiple screenshots.
 
 ### 2.3 Image Handling
 
 | Scenario | Behavior |
 |----------|----------|
 | Pasted image ≤ maxImageBytes | Store as base64, no warning |
-| Pasted image > maxImageBytes | Show soft warning (English), store anyway |
-| LLM supports multimodal | LLM compresses image to ≤ maxImageBytes before writing |
-| Context extraction for LLM | Replace image data with placeholder: `[screenshot, 245KB, base64]` |
+| Pasted image > maxImageBytes | Show soft warning (English, informational only); store anyway. The warning does not block saving. Context extraction will replace this image with a placeholder regardless. |
+| LLM supports multimodal (REVISE mode) | When writing the new file, LLM receives oversized image as multimodal input, re-encodes a compressed version (≤ maxImageBytes) to base64, and sets `compressedBy` to the model name |
+| Context extraction for LLM (READ mode) | Replace all image `data` values with placeholder: `[screenshot, 245KB, base64]` regardless of size |
+| Multimodal READ | Decode base64, send as image input to the model; do not include raw base64 in the text context |
 | Future: URL storage | Store `{"type": "url", "url": "https://..."}`, omit `data` field |
 | Future: local bundle | Zip file = HTML + `/assets/` image files |
 
@@ -183,7 +193,7 @@ dist/collab-template.html
 2. Floating toolbar appears: **[+ Comment]**
 3. User clicks → right sidebar opens comment input panel
 4. User types text; can paste screenshot via Ctrl+V
-5. If screenshot > `maxImageBytes`: soft warning shown (English)
+5. If screenshot > `maxImageBytes`: soft warning shown in English (informational only, does not block)
 6. User clicks **"Add"** →
    - Selected text highlighted in yellow
    - Comment bubble appears in right sidebar, anchored to paragraph
@@ -204,22 +214,45 @@ dist/collab-template.html
 ### 4.3 Save Flow
 
 ```
-First open:
-  [Open File] button → File System Access API (showOpenFilePicker)
+Newly generated file (no FileHandle yet):
+  [Save] button or Ctrl+S
+  → File System Access API: showSaveFilePicker (filter: .html)
+  → FileHandle stored in memory
+  → Write full HTML to chosen path
+  → Header shows filename + "Saved ✓"
+
+Opening an existing file:
+  [Open File] button
+  → showOpenFilePicker (filter: .html)
   → FileHandle stored in memory
   → File content loaded into page
+  → Header shows filename
 
-On changes:
+On changes (either case):
   Header shows "● Unsaved changes"
 
-Save:
+Subsequent saves:
   [Save] button or Ctrl+S
   → Serialize current collab-data into <script id="collab-data">
   → FileHandle.createWritable() → write full HTML → close
   → Header shows "Saved ✓"
+
+Note: FileHandle is session-scoped and not persisted across page loads.
+Closing and reopening the tab clears the handle; the next Ctrl+S will
+trigger showSaveFilePicker again.
 ```
 
-### 4.4 Page Layout
+### 4.4 Combined Comment + Edit on the Same Block
+
+A block may have both a comment and an edit simultaneously. The UI renders both independently:
+- The **"edited"** badge and strikethrough/green diff show the text change
+- The yellow highlight and sidebar bubble show the comment, anchored to the block
+
+In the READ context sent to the LLM, the comment's `quote` field reflects the **original** text (as it was when the comment was made). The LLM must interpret the comment as feedback on the original text, not the revised text.
+
+In REVISE mode, the LLM applies the human edit verbatim first, then interprets the comment against the post-edit content to determine if further changes are needed.
+
+### 4.5 Page Layout
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -253,9 +286,9 @@ The skill (`skill/SKILL.md`) defines three operating modes:
 **Steps:**
 1. Start from `dist/collab-template.html`
 2. Fill `<article id="collab-content">` with semantic HTML content
-3. Assign `data-cid` to every block element (sequential, per-type numbering)
+3. Assign `data-cid` to every block element (`<p>`, `<section>`, `<h1>`–`<h6>`, `<li>`, `<blockquote>`, `<pre>`, `<table>`), sequential per type
 4. Initialize `collab-data` with:
-   - `meta`: model name, timestamp, title, `maxImageBytes: 512000`, `imageStorage: "base64"`
+   - `meta`: `originalCreated` and `lastRevised` both set to current timestamp, model name, title, `maxImageBytes: 512000`, `imageStorage: "base64"`
    - `comments: []`
    - `edits: []`
 5. Output the complete `.html` file
@@ -271,19 +304,22 @@ The skill (`skill/SKILL.md`) defines three operating modes:
 3. Build structured context:
 
 [DOCUMENT CONTENT]
-(inner HTML of <article>, stripped of engine scripts)
+(inner HTML of <article>, engine scripts stripped)
 
 [HUMAN FEEDBACK]
 Comments:
-  · [p-001] "quoted text" → "comment body" [1 screenshot: 245KB]
+  · [p-001] "quoted text (≤500 chars)" → "comment body" [1 screenshot: 245KB]
   · [sec-001] "heading text" → "please add competitor comparison"
 
 Edits:
   · [p-002] "original text" → "revised text"
 
+Note: where a block appears in both Comments and Edits, the comment
+quote reflects the original text. Treat both as feedback on the same block.
+
 4. Image handling:
    · Default: replace image data with [screenshot, 245KB, base64]
-   · Multimodal model: decode base64, send as image input
+   · Multimodal model: decode base64, send as image input alongside text context
 ```
 
 ### Mode 3: REVISE
@@ -291,13 +327,17 @@ Edits:
 **Trigger:** After READ, user asks LLM to produce next version.
 
 **Steps:**
-1. Merge all `edits` into the corresponding `data-cid` blocks
-2. Address each `comment` by revising the targeted content
-3. Generate new collab-html file:
-   - Updated content
-   - Same `data-cid` values preserved
-   - `collab-data` reset to empty (`comments: []`, `edits: []`)
-   - `meta.model` and `meta.created` updated
+1. For each block with an edit: apply the human's revised text verbatim
+2. For each block with a comment (after edits are applied): revise the content to address the comment
+3. For blocks with both: apply edit first, then address comment
+4. Add new blocks as needed; assign fresh CIDs continuing from the highest existing sequence per type
+5. Remove blocks as needed; retire their CIDs permanently
+6. Generate new collab-html file:
+   - Updated content with all CIDs preserved or extended
+   - `collab-data` reset: `comments: []`, `edits: []`
+   - `meta.lastRevised` updated to current timestamp
+   - `meta.model` updated to current model
+   - `meta.originalCreated` unchanged
 
 ---
 
