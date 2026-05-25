@@ -1,0 +1,11 @@
+{
+  "name": "collab-html",
+  "version": "0.1.0",
+  "description": "Single-file HTML format for LLM-human collaborative document editing",
+  "type": "commonjs",
+  "scripts": {
+    "build": "node build.js",
+    "test": "node --test tests/utils.test.js tests/build.test.js"
+  },
+  "license": "MIT"
+}
