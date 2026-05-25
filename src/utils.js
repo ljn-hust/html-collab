@@ -61,7 +61,7 @@ function extractLLMContext(data) {
   const lines = ['[HUMAN FEEDBACK]'];
 
   if (data.comments.length === 0 && data.edits.length === 0) {
-    lines.push('No human feedback.');
+    lines.push('No human feedback');
     return lines.join('\n');
   }
 
