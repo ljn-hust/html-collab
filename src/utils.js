@@ -58,16 +58,18 @@ function truncateQuote(text) {
  * @returns {string}
  */
 function extractLLMContext(data) {
-  const lines = ['[HUMAN FEEDBACK]'];
+  const comments = data?.comments ?? [];
+  const edits    = data?.edits    ?? [];
+  const lines    = ['[HUMAN FEEDBACK]'];
 
-  if (data.comments.length === 0 && data.edits.length === 0) {
+  if (comments.length === 0 && edits.length === 0) {
     lines.push('No human feedback');
     return lines.join('\n');
   }
 
-  if (data.comments.length > 0) {
+  if (comments.length > 0) {
     lines.push('\nComments:');
-    for (const c of data.comments) {
+    for (const c of comments) {
       const imgParts = c.images.map(img => {
         const size = img.sizeBytes >= 1024 * 1024
           ? `${(img.sizeBytes / 1024 / 1024).toFixed(1)}MB`
@@ -81,9 +83,9 @@ function extractLLMContext(data) {
     }
   }
 
-  if (data.edits.length > 0) {
+  if (edits.length > 0) {
     lines.push('\nEdits:');
-    for (const e of data.edits) {
+    for (const e of edits) {
       lines.push(`  · [${e.target}] "${e.original}" → "${e.revised}"`);
     }
   }
