@@ -230,5 +230,5 @@ body {
   margin-bottom: 6px;
   font-style: italic;
 }
-.collab-comment-text { color: #333; }
+.collab-comment-body { color: #333; }
 .collab-comment-meta { font-size: 11px; color: #aaa; margin-top: 6px; }
