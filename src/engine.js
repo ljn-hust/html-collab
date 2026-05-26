@@ -103,6 +103,8 @@
       const el = $('collab-content').querySelector(`[data-cid="${edit.target}"]`);
       if (!el) continue;
       el.innerHTML = `<span class="collab-original">${escapeHtml(edit.original)}</span> <span class="collab-revised">${escapeHtml(edit.revised)}</span><span class="collab-edited-badge">edited</span>`;
+      // Re-attach edit button (innerHTML wipe destroyed the one from attachEditButtons)
+      attachEditButton(el);
     }
 
     // Render comment bubbles (highlights are already in the HTML if saved after selection)
