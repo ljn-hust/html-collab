@@ -11,15 +11,18 @@
 
   // ── DOM refs ───────────────────────────────────────────────
   const $ = (id) => document.getElementById(id);
-  const header = {
-    title: $('collab-title-display'),
-    status: $('collab-save-status'),
-    btnOpen: $('collab-btn-open'),
-    btnSave: $('collab-btn-save'),
-  };
+  // header is populated inside init() after DOM is ready
+  let header;
 
   // ── Init ───────────────────────────────────────────────────
   function init() {
+    header = {
+      title: $('collab-title-display'),
+      status: $('collab-save-status'),
+      btnOpen: $('collab-btn-open'),
+      btnSave: $('collab-btn-save'),
+    };
+
     const data = getCollabData(document);
     if (data && data.meta.title) {
       header.title.textContent = data.meta.title;
@@ -57,17 +60,23 @@
   }
 
   async function saveFile() {
-    if (!fileHandle) {
-      fileHandle = await window.showSaveFilePicker({
-        suggestedName: (getCollabData(document)?.meta?.title || 'document') + '.html',
-        types: [{ description: 'collab-html documents', accept: { 'text/html': ['.html'] } }],
-      });
+    try {
+      if (!fileHandle) {
+        fileHandle = await window.showSaveFilePicker({
+          suggestedName: (getCollabData(document)?.meta?.title || 'document') + '.html',
+          types: [{ description: 'collab-html documents', accept: { 'text/html': ['.html'] } }],
+        });
+      }
+      const writable = await fileHandle.createWritable();
+      await writable.write(document.documentElement.outerHTML);
+      await writable.close();
+      setStatus('saved');
+      isDirty = false;
+    } catch (err) {
+      if (err.name === 'AbortError') return; // user cancelled picker — silent no-op
+      console.error('[collab-html] Save failed:', err);
+      setStatus('unsaved');
     }
-    const writable = await fileHandle.createWritable();
-    await writable.write(document.documentElement.outerHTML);
-    await writable.close();
-    setStatus('saved');
-    isDirty = false;
   }
 
   function markDirty() {
