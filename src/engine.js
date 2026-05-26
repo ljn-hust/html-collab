@@ -225,8 +225,44 @@
       .replace(/"/g, '&quot;');
   }
 
-  // ── Screenshot paste — placeholder for Task 9 ─────────────
-  function handleCommentPaste(e) { /* implemented in Task 9 */ }
+  // ── Screenshot paste ───────────────────────────────────────
+  function handleCommentPaste(e) {
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (const item of items) {
+      if (!item.type.startsWith('image/')) continue;
+      e.preventDefault();
+      const blob = item.getAsFile();
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target.result;
+        const sizeBytes = blob.size;
+        const data = getCollabData(document);
+        const maxBytes = data?.meta?.maxImageBytes ?? 512000;
+
+        if (sizeBytes > maxBytes) {
+          const warn = $('collab-comment-warning');
+          const sizeKB = Math.round(sizeBytes / 1024);
+          const maxKB = Math.round(maxBytes / 1024);
+          warn.textContent = `This image is ${sizeKB} KB (limit: ${maxKB} KB). Consider cropping it before attaching to keep the file AI-friendly.`;
+          warn.style.display = 'block';
+        }
+
+        const imgObj = {
+          id: 'img-' + Date.now(),
+          type: 'base64',
+          data: dataUrl,
+          sizeBytes,
+        };
+        $('collab-comment-panel')._images.push(imgObj);
+
+        const preview = document.createElement('img');
+        preview.src = dataUrl;
+        $('collab-comment-images').appendChild(preview);
+      };
+      reader.readAsDataURL(blob);
+    }
+  }
 
   // ── Expose internal functions used in later tasks ──────────
   window._collab = { markDirty, setStatus };
