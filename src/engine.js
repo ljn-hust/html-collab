@@ -94,8 +94,138 @@
   // ── Placeholders for functions added in Tasks 8-11 ────────
   // Must exist here so init() can call them during Tasks 7-10.
   function renderState() { /* implemented in Task 11 */ }
-  function onSelectionChange() { /* implemented in Task 8 */ }
   function attachEditButtons() { /* implemented in Task 10 */ }
+
+  // ── Selection / toolbar ────────────────────────────────────
+  function onSelectionChange() {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.toString().trim()) {
+      $('collab-toolbar').style.display = 'none';
+      return;
+    }
+    // Only show toolbar if selection is inside #collab-content
+    const range = sel.getRangeAt(0);
+    const content = $('collab-content');
+    if (!content.contains(range.commonAncestorContainer)) {
+      $('collab-toolbar').style.display = 'none';
+      return;
+    }
+    // Position toolbar above the selection
+    const rect = range.getBoundingClientRect();
+    const toolbar = $('collab-toolbar');
+    toolbar.style.display = 'block';
+    toolbar.style.top = (window.scrollY + rect.top - 38) + 'px';
+    toolbar.style.left = (window.scrollX + rect.left) + 'px';
+
+    $('collab-toolbar-comment').onclick = () => {
+      pendingCommentRange = range.cloneRange();
+      pendingCommentTarget = findTargetCid(range.commonAncestorContainer);
+      toolbar.style.display = 'none';
+      openCommentPanel();
+    };
+  }
+
+  function findTargetCid(node) {
+    let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+    while (el && el !== document.body) {
+      if (el.dataset.cid) return el.dataset.cid;
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  // ── Comment panel ──────────────────────────────────────────
+  function openCommentPanel() {
+    const panel = $('collab-comment-panel');
+    $('collab-comment-text').value = '';
+    $('collab-comment-images').innerHTML = '';
+    $('collab-comment-warning').style.display = 'none';
+    panel.style.display = 'block';
+    $('collab-comments-list').prepend(panel);
+    $('collab-comment-text').focus();
+
+    panel._images = [];   // staged images for current comment
+
+    $('collab-comment-text').onpaste = handleCommentPaste;
+    $('collab-comment-add').onclick = commitComment;
+    $('collab-comment-cancel').onclick = () => {
+      panel.style.display = 'none';
+      pendingCommentRange = null;
+      pendingCommentTarget = null;
+    };
+  }
+
+  function commitComment() {
+    const text = $('collab-comment-text').value.trim();
+    if (!text && $('collab-comment-panel')._images.length === 0) return;
+
+    const quote = pendingCommentRange
+      ? truncateQuote(pendingCommentRange.toString())
+      : '';
+
+    const data = getCollabData(document);
+    const existingIds = data.comments.map(c => c.id);
+    const id = generateCid('c', existingIds);  // uses max existing c-NNN, avoids duplicates
+    const comment = {
+      id,
+      target: pendingCommentTarget || 'unknown',
+      quote,
+      text,
+      images: $('collab-comment-panel')._images,
+      author: 'human',
+      timestamp: new Date().toISOString(),
+    };
+    data.comments.push(comment);
+    setCollabData(document, data);
+    markDirty();
+
+    // Highlight selection in article
+    if (pendingCommentRange) {
+      const mark = document.createElement('mark');
+      mark.className = 'collab-highlight';
+      mark.dataset.commentId = id;
+      try {
+        pendingCommentRange.surroundContents(mark);
+      } catch (e) {
+        // surroundContents fails if range spans multiple elements; skip highlight
+        console.warn('[collab-html] Could not highlight selection:', e);
+      }
+    }
+
+    $('collab-comment-panel').style.display = 'none';
+    pendingCommentRange = null;
+    pendingCommentTarget = null;
+    renderCommentBubble(comment);
+  }
+
+  function renderCommentBubble(comment) {
+    const list = $('collab-comments-list');
+    const bubble = document.createElement('div');
+    bubble.className = 'collab-comment-bubble';
+    bubble.dataset.commentId = comment.id;
+    bubble.innerHTML = `
+      <div class="collab-comment-quote">${escapeHtml(comment.quote)}</div>
+      <div class="collab-comment-body">${escapeHtml(comment.text)}</div>
+      ${comment.images.map(img =>
+        img.type === 'base64'
+          ? `<img src="${img.data}" alt="screenshot">`
+          : `<img src="${img.url}" alt="screenshot">`
+      ).join('')}
+      <div class="collab-comment-meta">${new Date(comment.timestamp).toLocaleString()}</div>
+    `;
+    list.appendChild(bubble);
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ── Screenshot paste — placeholder for Task 9 ─────────────
+  function handleCommentPaste(e) { /* implemented in Task 9 */ }
 
   // ── Expose internal functions used in later tasks ──────────
   window._collab = { markDirty, setStatus };
