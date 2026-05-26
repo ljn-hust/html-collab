@@ -26,7 +26,11 @@ Use this skill when asked to create a document for human review, read an annotat
    - `imageStorage`: "base64"
    - `comments`: []
    - `edits`: []
-5. Output the complete `.html` file.
+5. **Do not inject generated content or document-level UI into framework-owned areas.**
+   - `#collab-header` (the top bar with Open / Save buttons) and `#collab-sidebar` (the comment panel) belong exclusively to the collab-html engine.
+   - If the document requires custom UI controls (e.g. a language toggle, a table of contents, a theme switch), place them **inside `<article id="collab-content">`** — either as a dedicated block at the top of the article or as a floating element positioned relative to `#collab-main`.
+   - Adding buttons or markup to the framework header makes document-level features look like engine features and confuses human reviewers.
+6. Output the complete `.html` file.
 
 ---
 
