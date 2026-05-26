@@ -93,7 +93,23 @@
 
   // ── Placeholders for functions added in Tasks 8-11 ────────
   // Must exist here so init() can call them during Tasks 7-10.
-  function renderState() { /* implemented in Task 11 */ }
+  // ── Render saved state on file load ───────────────────────
+  function renderState() {
+    const data = getCollabData(document);
+    if (!data) return;
+
+    // Render edits: show diff markup for each saved edit
+    for (const edit of data.edits) {
+      const el = $('collab-content').querySelector(`[data-cid="${edit.target}"]`);
+      if (!el) continue;
+      el.innerHTML = `<span class="collab-original">${escapeHtml(edit.original)}</span> <span class="collab-revised">${escapeHtml(edit.revised)}</span><span class="collab-edited-badge">edited</span>`;
+    }
+
+    // Render comment bubbles (highlights are already in the HTML if saved after selection)
+    for (const comment of data.comments) {
+      renderCommentBubble(comment);
+    }
+  }
 
   // ── Inline edit ────────────────────────────────────────────
   function attachEditButtons() {
