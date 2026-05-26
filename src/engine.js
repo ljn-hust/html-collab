@@ -94,7 +94,119 @@
   // ── Placeholders for functions added in Tasks 8-11 ────────
   // Must exist here so init() can call them during Tasks 7-10.
   function renderState() { /* implemented in Task 11 */ }
-  function attachEditButtons() { /* implemented in Task 10 */ }
+
+  // ── Inline edit ────────────────────────────────────────────
+  function attachEditButtons() {
+    const content = $('collab-content');
+    content.querySelectorAll('[data-cid]').forEach(attachEditButton);
+
+    // Also handle auto-CID for blocks without data-cid
+    let autoIdx = 0;
+    const BLOCK_TAGS = ['P','SECTION','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE','PRE','TABLE'];
+    content.querySelectorAll(BLOCK_TAGS.join(',')).forEach(el => {
+      if (!el.dataset.cid) {
+        el.dataset.cid = 'auto-' + (++autoIdx);
+        console.warn('[collab-html] auto-assigned CID:', el.dataset.cid, el);
+        attachEditButton(el);
+      }
+    });
+  }
+
+  function attachEditButton(el) {
+    if (el.querySelector('.collab-edit-btn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'collab-edit-btn';
+    btn.textContent = '✎ Edit';
+    btn.addEventListener('click', (e) => { e.stopPropagation(); startEdit(el); });
+    el.appendChild(btn);
+  }
+
+  function startEdit(el) {
+    // Dim all other blocks
+    $('collab-content').querySelectorAll('[data-cid]').forEach(b => {
+      b.classList.toggle('dimmed', b !== el);
+    });
+    el.classList.add('editing');
+    el.contentEditable = 'true';
+    el.focus();
+
+    // Store original text (from LLM version, not a previous human edit)
+    const data = getCollabData(document);
+    const existing = data.edits.find(e => e.target === el.dataset.cid);
+    el.dataset.editOriginal = existing ? existing.original : el.innerText.trim();
+
+    // Show confirm/cancel bar
+    const bar = document.createElement('div');
+    bar.className = 'collab-edit-bar';
+    bar.innerHTML = `
+      <button class="confirm">Confirm (Ctrl+Enter)</button>
+      <button class="cancel">Cancel</button>
+    `;
+    bar.querySelector('.confirm').onclick = () => confirmEdit(el, bar);
+    bar.querySelector('.cancel').onclick = () => cancelEdit(el, bar);
+    el.after(bar);
+
+    el.addEventListener('keydown', function handler(e) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        confirmEdit(el, bar);
+        el.removeEventListener('keydown', handler);
+      }
+    });
+  }
+
+  function confirmEdit(el, bar) {
+    const revised = el.innerText.trim();
+    const original = el.dataset.editOriginal;
+
+    if (revised === original) {
+      cancelEdit(el, bar);
+      return;
+    }
+
+    // Save diff to collab-data
+    const data = getCollabData(document);
+    const cid = el.dataset.cid;
+    const existingIdx = data.edits.findIndex(e => e.target === cid);
+    const editRecord = {
+      id: existingIdx >= 0
+        ? data.edits[existingIdx].id
+        : 'e-' + String(data.edits.length + 1).padStart(3, '0'),
+      target: cid,
+      original,
+      revised,
+      author: 'human',
+      timestamp: new Date().toISOString(),
+    };
+    if (existingIdx >= 0) data.edits[existingIdx] = editRecord;
+    else data.edits.push(editRecord);
+    setCollabData(document, data);
+    markDirty();
+
+    // Render diff in place
+    el.contentEditable = 'false';
+    el.classList.remove('editing');
+    el.innerHTML = `<span class="collab-original">${escapeHtml(original)}</span> <span class="collab-revised">${escapeHtml(revised)}</span><span class="collab-edited-badge">edited</span>`;
+
+    // Refresh edit button (innerHTML wiped the old one)
+    el.querySelector('.collab-edit-btn')?.remove();
+    attachEditButton(el);
+
+    bar.remove();
+    undimAll();
+  }
+
+  function cancelEdit(el, bar) {
+    el.contentEditable = 'false';
+    el.classList.remove('editing');
+    delete el.dataset.editOriginal;
+    bar.remove();
+    undimAll();
+  }
+
+  function undimAll() {
+    $('collab-content').querySelectorAll('[data-cid]').forEach(b => b.classList.remove('dimmed'));
+  }
 
   // ── Selection / toolbar ────────────────────────────────────
   function onSelectionChange() {
