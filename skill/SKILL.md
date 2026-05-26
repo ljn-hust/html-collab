@@ -47,7 +47,7 @@ Use this skill when asked to create a document for human review, read an annotat
 [HUMAN FEEDBACK]
 
 Comments:
-  · [<target>] "<quote>" → "<comment text>" [screenshot, <size>KB, base64]
+  · [<target>] "<quote>" → "<comment text>" [screenshot, <size>, base64]
 
 Edits:
   · [<target>] "<original>" → "<revised>"
