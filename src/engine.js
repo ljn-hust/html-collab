@@ -114,8 +114,9 @@
     const rect = range.getBoundingClientRect();
     const toolbar = $('collab-toolbar');
     toolbar.style.display = 'block';
-    toolbar.style.top = (window.scrollY + rect.top - 38) + 'px';
-    toolbar.style.left = (window.scrollX + rect.left) + 'px';
+    // position: fixed uses viewport coords — getBoundingClientRect() already is viewport-relative
+    toolbar.style.top = (rect.top - 38) + 'px';
+    toolbar.style.left = rect.left + 'px';
 
     $('collab-toolbar-comment').onclick = () => {
       pendingCommentRange = range.cloneRange();
