@@ -199,6 +199,20 @@ dist/collab-template.html
    - Comment bubble appears in right sidebar, anchored to paragraph
    - `collab-data.comments` updated
 
+### 4.1a Delete Comment Flow
+
+Each rendered comment bubble carries a **[× Delete]** button (top-right of bubble).
+
+1. User clicks **[× Delete]** on a comment bubble →
+   - The comment record is removed from `collab-data.comments`
+   - The corresponding `<mark class="collab-highlight">` element in the article is unwrapped (its text content is preserved; only the `<mark>` wrapper is removed)
+   - The sidebar bubble is removed from the DOM
+   - Document marked dirty
+2. No confirmation dialog — deletion is immediate.
+3. If the mark element cannot be found (e.g. the selection spanned multiple elements and no `<mark>` was inserted), the data deletion and bubble removal still proceed; the missing mark is silently ignored.
+
+**Scope:** Delete only. Comments are not editable after submission.
+
 ### 4.2 Inline Edit Flow
 
 1. User hovers over a block element → pencil icon appears (top-right of block)
@@ -263,10 +277,10 @@ In REVISE mode, the LLM applies the human edit verbatim first, then interprets t
 │                                     │                        │
 │  Normal paragraph text              │                        │
 │                                     │                        │
-│  [yellow highlight] selected text ──┼──► ┌────────────────┐  │
-│                                     │    │ Comment text   │  │
-│  ~~original text~~ revised text     │    │ [screenshot]   │  │
-│  [edited]                           │    └────────────────┘  │
+│  [yellow highlight] selected text ──┼──► ┌─────────────────┐ │
+│                                     │    │ Comment text  [×]│ │
+│  ~~original text~~ revised text     │    │ [screenshot]    │ │
+│  [edited]                           │    └─────────────────┘ │
 │                                     │                        │
 └─────────────────────────────────────┴────────────────────────┘
 ```
