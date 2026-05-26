@@ -146,13 +146,13 @@
     bar.querySelector('.cancel').onclick = () => cancelEdit(el, bar);
     el.after(bar);
 
-    el.addEventListener('keydown', function handler(e) {
+    el._editKeyHandler = function(e) {
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         confirmEdit(el, bar);
-        el.removeEventListener('keydown', handler);
       }
-    });
+    };
+    el.addEventListener('keydown', el._editKeyHandler);
   }
 
   function confirmEdit(el, bar) {
@@ -192,6 +192,8 @@
     el.querySelector('.collab-edit-btn')?.remove();
     attachEditButton(el);
 
+    el.removeEventListener('keydown', el._editKeyHandler);
+    delete el._editKeyHandler;
     bar.remove();
     undimAll();
   }
@@ -199,6 +201,8 @@
   function cancelEdit(el, bar) {
     el.contentEditable = 'false';
     el.classList.remove('editing');
+    el.removeEventListener('keydown', el._editKeyHandler);
+    delete el._editKeyHandler;
     delete el.dataset.editOriginal;
     bar.remove();
     undimAll();
