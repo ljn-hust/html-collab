@@ -1,14 +1,14 @@
-# collab-html Design Spec
+# html-collab Design Spec
 
 **Date:** 2026-05-25  
 **Status:** Approved  
-**Location:** `~/Projects/collab-html/`
+**Location:** `~/Projects/html-collab/`
 
 ---
 
 ## 1. Overview
 
-**collab-html** is a lightweight, open-source format and toolset for LLM–human collaborative document editing. It uses a single self-contained `.html` file as the canonical document format: the LLM generates structured content, the human annotates and edits in Chrome, and the same file is fed back to the LLM for the next revision cycle.
+**html-collab** is a lightweight, open-source format and toolset for LLM–human collaborative document editing. It uses a single self-contained `.html` file as the canonical document format: the LLM generates structured content, the human annotates and edits in Chrome, and the same file is fed back to the LLM for the next revision cycle.
 
 ### Goals
 
@@ -28,7 +28,7 @@
 
 ## 2. File Format Spec
 
-Every collab-html document is a single `.html` file with four logical layers:
+Every html-collab document is a single `.html` file with four logical layers:
 
 ```
 document.html
@@ -139,7 +139,7 @@ document.html
 ## 3. Project Structure
 
 ```
-~/Projects/collab-html/
+~/Projects/html-collab/
 │
 ├── src/
 │   ├── engine.js               Annotation engine source (~400 lines, vanilla JS)
@@ -270,7 +270,7 @@ In REVISE mode, the LLM applies the human edit verbatim first, then interprets t
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  collab-html  |  Document Title          [Open File]  [Save] │
+│  html-collab |  Document Title          [Open File]  [Save] │
 ├─────────────────────────────────────┬────────────────────────┤
 │                                     │                        │
 │  <article>                          │  Comment sidebar       │
@@ -346,7 +346,7 @@ quote reflects the original text. Treat both as feedback on the same block.
 3. For blocks with both: apply edit first, then address comment
 4. Add new blocks as needed; assign fresh CIDs continuing from the highest existing sequence per type
 5. Remove blocks as needed; retire their CIDs permanently
-6. Generate new collab-html file:
+6. Generate new html-collab file:
    - Updated content with all CIDs preserved or extended
    - `collab-data` reset: `comments: []`, `edits: []`
    - `meta.lastRevised` updated to current timestamp
@@ -362,5 +362,5 @@ quote reflects the original text. Treat both as feedback on the same block.
 | URL image storage | `imageStorage: "url"`, requires image hosting tool |
 | Local bundle (zip) | HTML + `/assets/` folder, for offline sharing with original images |
 | Light edit log | Optional append-only log of past revisions, only if implementation stays simple |
-| npm package | Publish `collab-html` to npm for programmatic use |
-| OpenClaw A2UI integration | Render collab-html inside OpenClaw Canvas with agent eval bridge |
+| npm package | Publish `html-collab` to npm for programmatic use |
+| OpenClaw A2UI integration | Render html-collab inside OpenClaw Canvas with agent eval bridge |

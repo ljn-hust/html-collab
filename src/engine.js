@@ -1,5 +1,5 @@
 'use strict';
-/* collab-html engine — DOM-dependent, runs in Chrome only */
+/* html-collab engine — DOM-dependent, runs in Chrome only */
 
 (function collabEngine() {
 
@@ -26,7 +26,7 @@
     const data = getCollabData(document);
     if (data && data.meta.title) {
       header.title.textContent = data.meta.title;
-      document.title = data.meta.title + ' — collab-html';
+      document.title = data.meta.title + ' — html-collab';
     }
 
     attachEditButtons();
@@ -44,7 +44,7 @@
   // ── File access ────────────────────────────────────────────
   async function openFile() {
     const [handle] = await window.showOpenFilePicker({
-      types: [{ description: 'collab-html documents', accept: { 'text/html': ['.html'] } }],
+      types: [{ description: 'html-collab documents', accept: { 'text/html': ['.html'] } }],
     });
     // Note: document.write() replaces the entire page including this IIFE.
     // The new document's embedded engine script re-executes from scratch,
@@ -64,7 +64,7 @@
       if (!fileHandle) {
         fileHandle = await window.showSaveFilePicker({
           suggestedName: (getCollabData(document)?.meta?.title || 'document') + '.html',
-          types: [{ description: 'collab-html documents', accept: { 'text/html': ['.html'] } }],
+          types: [{ description: 'html-collab documents', accept: { 'text/html': ['.html'] } }],
         });
       }
       const writable = await fileHandle.createWritable();
@@ -74,7 +74,7 @@
       isDirty = false;
     } catch (err) {
       if (err.name === 'AbortError') return; // user cancelled picker — silent no-op
-      console.error('[collab-html] Save failed:', err);
+      console.error('[html-collab] Save failed:', err);
       setStatus('unsaved');
     }
   }
@@ -124,7 +124,7 @@
     content.querySelectorAll(BLOCK_TAGS.join(',')).forEach(el => {
       if (!el.dataset.cid) {
         el.dataset.cid = 'auto-' + (++autoIdx);
-        console.warn('[collab-html] auto-assigned CID:', el.dataset.cid, el);
+        console.warn('[html-collab] auto-assigned CID:', el.dataset.cid, el);
         attachEditButton(el);
       }
     });
@@ -323,7 +323,7 @@
         pendingCommentRange.surroundContents(mark);
       } catch (e) {
         // surroundContents fails if range spans multiple elements; skip highlight
-        console.warn('[collab-html] Could not highlight selection:', e);
+        console.warn('[html-collab] Could not highlight selection:', e);
       }
     }
 

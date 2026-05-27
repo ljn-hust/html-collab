@@ -1,10 +1,10 @@
-# collab-html Skill
+# html-collab Skill
 
-Use this skill when asked to create a document for human review, read an annotated collab-html file, or produce a revised version based on human feedback.
+Use this skill when asked to create a document for human review, read an annotated html-collab file, or produce a revised version based on human feedback.
 
 ---
 
-## GENERATE — Create a new collab-html document
+## GENERATE — Create a new html-collab document
 
 **When:** User asks you to write, draft, or generate a document.
 
@@ -27,7 +27,7 @@ Use this skill when asked to create a document for human review, read an annotat
    - `comments`: []
    - `edits`: []
 5. **Do not inject generated content or document-level UI into framework-owned areas.**
-   - `#collab-header` (the top bar with Open / Save buttons) and `#collab-sidebar` (the comment panel) belong exclusively to the collab-html engine.
+   - `#collab-header` (the top bar with Open / Save buttons) and `#collab-sidebar` (the comment panel) belong exclusively to the html-collab engine.
    - If the document requires custom UI controls (e.g. a language toggle, a table of contents, a theme switch), place them **inside `<article id="collab-content">`** — either as a dedicated block at the top of the article or as a floating element positioned relative to `#collab-main`.
    - Adding buttons or markup to the framework header makes document-level features look like engine features and confuses human reviewers.
 6. Output the complete `.html` file.
@@ -98,6 +98,6 @@ If a comment contains images with `sizeBytes > meta.maxImageBytes`, and you supp
 
 ## Reference
 
-- Format spec: `docs/superpowers/specs/2026-05-25-collab-html-design.md`
+- Format spec: `docs/superpowers/specs/2026-05-25-html-collab-design.md`
 - Template: `dist/collab-template.html`
 - Example: `examples/example.html`

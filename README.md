@@ -1,4 +1,4 @@
-# collab-html
+# html-collab
 
 A lightweight, open-source format for LLM–human collaborative document editing.
 
@@ -8,7 +8,7 @@ all readable by the next LLM call. Open in Chrome, annotate, save, feed back to 
 ## Quick start
 
 **For humans (Chrome):**
-1. Open any `.html` file built with collab-html in Chrome
+1. Open any `.html` file built with html-collab in Chrome
 2. Select text → `+ Comment` to add a comment (paste screenshots with Ctrl+V)
 3. Hover a paragraph → `✎ Edit` to edit inline (Ctrl+Enter to confirm)
 4. `Ctrl+S` to save
@@ -32,7 +32,7 @@ node --test tests/utils.test.js tests/build.test.js
 
 ## Format
 
-A collab-html file has four layers:
+An html-collab file has four layers:
 
 | Layer | Element | Description |
 |-------|---------|-------------|

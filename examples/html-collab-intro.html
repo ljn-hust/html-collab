@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="collab-html/0.1">
-  <title>collab-html — Project Introduction</title>
+  <title>html-collab — Project Introduction</title>
   <style id="collab-styles">
 /* ============================================================
    collab-html engine styles
@@ -247,7 +247,7 @@ body {
 
   <header id="collab-header">
     <div id="collab-header-left">
-      <span id="collab-logo">collab-html</span>
+      <span id="collab-logo">html-collab</span>
       <span id="collab-title-display"></span>
     </div>
     <div id="collab-header-right">
@@ -262,7 +262,7 @@ body {
       <!-- LLM fills this article element with content -->
       <article id="collab-content">
 
-        <h1 data-cid="h-001">collab-html — Project Introduction</h1>
+        <h1 data-cid="h-001">html-collab — Project Introduction</h1>
 
         <p data-cid="p-001">collab-html is a lightweight, open-source format for LLM–human collaborative document editing. It represents an entire working document — content, annotations, and inline edits — as a single self-contained <code>.html</code> file that can be opened in Chrome, annotated by a human, and fed back to an LLM for the next revision cycle.</p>
 
@@ -347,7 +347,7 @@ body {
 {
   "version": "0.1",
   "meta": {
-    "title": "collab-html — Project Introduction",
+    "title": "html-collab — Project Introduction",
     "originalCreated": "2026-05-26T12:00:00Z",
     "lastRevised": "2026-05-26T12:00:00Z",
     "model": "claude-sonnet-4-5",
@@ -462,7 +462,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
 
 'use strict';
-/* collab-html engine — DOM-dependent, runs in Chrome only */
+/* html-collab engine — DOM-dependent, runs in Chrome only */
 
 (function collabEngine() {
 
@@ -489,7 +489,7 @@ if (typeof module !== 'undefined' && module.exports) {
     const data = getCollabData(document);
     if (data && data.meta.title) {
       header.title.textContent = data.meta.title;
-      document.title = data.meta.title + ' — collab-html';
+      document.title = data.meta.title + ' — html-collab';
     }
 
     attachEditButtons();
@@ -507,7 +507,7 @@ if (typeof module !== 'undefined' && module.exports) {
   // ── File access ────────────────────────────────────────────
   async function openFile() {
     const [handle] = await window.showOpenFilePicker({
-      types: [{ description: 'collab-html documents', accept: { 'text/html': ['.html'] } }],
+      types: [{ description: 'html-collab documents', accept: { 'text/html': ['.html'] } }],
     });
     // Note: document.write() replaces the entire page including this IIFE.
     // The new document's embedded engine script re-executes from scratch,
@@ -527,7 +527,7 @@ if (typeof module !== 'undefined' && module.exports) {
       if (!fileHandle) {
         fileHandle = await window.showSaveFilePicker({
           suggestedName: (getCollabData(document)?.meta?.title || 'document') + '.html',
-          types: [{ description: 'collab-html documents', accept: { 'text/html': ['.html'] } }],
+          types: [{ description: 'html-collab documents', accept: { 'text/html': ['.html'] } }],
         });
       }
       const writable = await fileHandle.createWritable();
@@ -537,7 +537,7 @@ if (typeof module !== 'undefined' && module.exports) {
       isDirty = false;
     } catch (err) {
       if (err.name === 'AbortError') return; // user cancelled picker — silent no-op
-      console.error('[collab-html] Save failed:', err);
+      console.error('[html-collab] Save failed:', err);
       setStatus('unsaved');
     }
   }
@@ -587,7 +587,7 @@ if (typeof module !== 'undefined' && module.exports) {
     content.querySelectorAll(BLOCK_TAGS.join(',')).forEach(el => {
       if (!el.dataset.cid) {
         el.dataset.cid = 'auto-' + (++autoIdx);
-        console.warn('[collab-html] auto-assigned CID:', el.dataset.cid, el);
+        console.warn('[html-collab] auto-assigned CID:', el.dataset.cid, el);
         attachEditButton(el);
       }
     });
@@ -786,7 +786,7 @@ if (typeof module !== 'undefined' && module.exports) {
         pendingCommentRange.surroundContents(mark);
       } catch (e) {
         // surroundContents fails if range spans multiple elements; skip highlight
-        console.warn('[collab-html] Could not highlight selection:', e);
+        console.warn('[html-collab] Could not highlight selection:', e);
       }
     }
 
