@@ -212,6 +212,7 @@ body {
 
 /* --- Comment bubbles in sidebar --- */
 .collab-comment-bubble {
+  position: relative;
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -232,3 +233,21 @@ body {
 }
 .collab-comment-body { color: #333; }
 .collab-comment-meta { font-size: 11px; color: #aaa; margin-top: 6px; }
+
+/* Delete button on comment bubbles */
+.collab-comment-delete {
+  display: none;
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 3px;
+  border-radius: 3px;
+}
+.collab-comment-delete:hover { color: #c0392b; background: #fef0ef; }
+.collab-comment-bubble:hover .collab-comment-delete { display: inline-block; }

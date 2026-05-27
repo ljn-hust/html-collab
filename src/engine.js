@@ -339,6 +339,7 @@
     bubble.className = 'collab-comment-bubble';
     bubble.dataset.commentId = comment.id;
     bubble.innerHTML = `
+      <button class="collab-comment-delete" aria-label="Delete comment" title="Delete comment">×</button>
       <div class="collab-comment-quote">${escapeHtml(comment.quote)}</div>
       <div class="collab-comment-body">${escapeHtml(comment.text)}</div>
       ${comment.images.map(img =>
@@ -348,7 +349,36 @@
       ).join('')}
       <div class="collab-comment-meta">${new Date(comment.timestamp).toLocaleString()}</div>
     `;
+    // Wire delete button imperatively after innerHTML (avoids inline onclick)
+    bubble.querySelector('.collab-comment-delete')
+      .addEventListener('click', (e) => { e.stopPropagation(); deleteComment(comment.id); });
     list.appendChild(bubble);
+  }
+
+  function deleteComment(id) {
+    // 1. Remove from collab-data
+    const data = getCollabData(document);
+    data.comments = data.comments.filter(c => c.id !== id);
+    setCollabData(document, data);
+
+    // 2. Unwrap <mark> in article — preserve text content, remove wrapper element
+    const mark = $('collab-content')
+      .querySelector(`.collab-highlight[data-comment-id="${id}"]`);
+    if (mark) {
+      const parent = mark.parentNode;
+      while (mark.firstChild) {
+        parent.insertBefore(mark.firstChild, mark);
+      }
+      parent.removeChild(mark);
+    }
+
+    // 3. Remove bubble from sidebar
+    const bubble = $('collab-comments-list')
+      .querySelector(`.collab-comment-bubble[data-comment-id="${id}"]`);
+    if (bubble) bubble.remove();
+
+    // 4. Mark document dirty
+    markDirty();
   }
 
   function escapeHtml(str) {
