@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const DIST = path.join(__dirname, '..', 'dist', 'collab-template.html');
+const DIST = path.join(__dirname, '..', '..', 'dist', 'collab-template.html');
 
 test('build produces dist/collab-template.html', () => {
   execSync('node build.js', { cwd: path.join(__dirname, '..') });

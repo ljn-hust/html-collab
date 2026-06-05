@@ -20,8 +20,8 @@ One `.html` file holds LLM-generated content, human annotations (comments + inli
 ## Build from source
 
 ```bash
-node build.js        # → dist/collab-template.html
-node --test          # run tests
+node dev/build.js                                              # → dist/collab-template.html
+node --test dev/tests/build.test.js dev/tests/utils.test.js   # run tests
 ```
 
 ## License

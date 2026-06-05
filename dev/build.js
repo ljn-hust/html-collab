@@ -2,11 +2,13 @@
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = __dirname;
-const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
+const DEV = __dirname;                        // dev/
+const ROOT = path.join(DEV, '..');            // repo root
+const read = (rel) => fs.readFileSync(path.join(DEV, rel), 'utf8');
 const write = (rel, content) => {
-  fs.mkdirSync(path.join(ROOT, path.dirname(rel)), { recursive: true });
-  fs.writeFileSync(path.join(ROOT, rel), content, 'utf8');
+  const abs = path.join(ROOT, rel);
+  fs.mkdirSync(path.dirname(abs), { recursive: true });
+  fs.writeFileSync(abs, content, 'utf8');
 };
 
 const css = read('src/engine.css');

@@ -1,6 +1,7 @@
 node_modules/
 .DS_Store
-dist/*.html
+dist/
+dev/node_modules/
 .claude/
 .env
 *.log
