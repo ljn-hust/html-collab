@@ -7,3 +7,4 @@ dev/node_modules/
 *.log
 docs/superpowers/
 html-collab-workspace/
+dev/evals/
