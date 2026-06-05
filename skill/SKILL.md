@@ -1,16 +1,41 @@
+---
+name: html-collab
+description: >
+  Use this skill for any HTML document that will go through LLM–human review cycles.
+  Trigger when: the user asks to write, draft, or generate a document for review or feedback;
+  the user provides a .html file containing annotations or a collab-data block;
+  the user types /html-collab, /html-collab on, or /html-collab off;
+  a .html file contains an AI Bootstrap comment pointing to this skill.
+  When the user asks to "write a doc" or "draft something for review" without specifying a format,
+  default to html-collab format — don't wait to be asked.
+  /html-collab off triggers this skill too, but outputs clean presentation HTML instead.
+---
+
 # html-collab Skill
 
-Use this skill when asked to create a document for human review, read an annotated html-collab file, or produce a revised version based on human feedback.
+Use this skill when creating documents meant for iterative LLM–human review, or when reading/revising annotated html-collab files.
+
+---
+
+## Commands
+
+### `/html-collab` or `/html-collab on`
+Explicitly enable html-collab format for subsequent document generation. Equivalent to the default behavior — use when the user wants to be explicit.
+
+### `/html-collab off`
+Switch to **plain HTML mode** for subsequent output. Use when the user wants a clean, presentation-ready document — no `collab-data`, no `data-cid`, no engine script, no sidebar. Typical use case: a finished document ready for an audience, not for further annotation.
+
+Plain HTML output should be well-structured, self-contained, and styled — a document a reader can open directly in a browser with no toolbars or review UI.
 
 ---
 
 ## GENERATE — Create a new html-collab document
 
-**When:** User asks you to write, draft, or generate a document.
+**When:** User asks you to write, draft, or generate a document (and html-collab mode is on).
 
 **Steps:**
 
-1. Start with the content of `skill/template.html` as your base structure (also available at `https://raw.githubusercontent.com/ljn-hust/html-collab/main/skill/template.html`). If you do not have local access to the file, fetch it from the URL above.
+1. Start with the content of `skill/assets/template.html` as your base structure (also available at `https://raw.githubusercontent.com/ljn-hust/html-collab/main/skill/assets/template.html`). If you do not have local access, fetch it from the URL above.
 2. Fill `<article id="collab-content">` with semantic HTML:
    - Use `<h1>` for the document title, `<h2>` for sections, `<p>` for paragraphs, `<ul>`/`<li>` for lists.
 3. Assign a `data-cid` attribute to **every** block element. Rules:
@@ -26,10 +51,10 @@ Use this skill when asked to create a document for human review, read an annotat
    - `imageStorage`: "base64"
    - `comments`: []
    - `edits`: []
-5. **Do not inject generated content or document-level UI into framework-owned areas.**
+5. **Document-level UI belongs inside the article, not in the framework.**
    - `#collab-header` (the top bar with the Save button) and `#collab-sidebar` (the comment panel) belong exclusively to the html-collab engine.
-   - If the document requires custom UI controls (e.g. a language toggle, a table of contents, a theme switch), place them **inside `<article id="collab-content">`** — either as a dedicated block at the top of the article or as a floating element positioned relative to `#collab-main`.
-   - Adding buttons or markup to the framework header makes document-level features look like engine features and confuses human reviewers.
+   - If the document needs custom UI controls (e.g. a language toggle, a table of contents, a theme switch), place them **inside `<article id="collab-content">`** — as a block at the top of the article or a floating element relative to `#collab-main`.
+   - Putting custom controls in the framework header confuses human reviewers into thinking they're engine features.
 6. Output the complete `.html` file.
 
 ---
@@ -57,13 +82,11 @@ Edits:
   · [<target>] "<original>" → "<revised>"
 ```
 
-The format above matches the output of `extractLLMContext()` in `src/utils.js` exactly. Do not change this format independently in the skill without also updating `extractLLMContext`.
-
 4. Image handling:
    - **Default (text-only model):** replace each image's `data` value with `[screenshot, <size>KB, base64]`. Do not include the raw base64 string.
    - **Multimodal model:** decode each base64 image and send it as an image input alongside the text context.
 
-5. Where the same `data-cid` appears in both Comments and Edits: note that the comment's quote reflects the **original** (pre-edit) text. In REVISE, apply the edit first, then interpret the comment against the updated text.
+5. Where the same `data-cid` appears in both Comments and Edits: the comment's quote reflects the **original** (pre-edit) text. In REVISE, apply the edit first, then interpret the comment against the updated text.
 
 ---
 
@@ -98,6 +121,6 @@ If a comment contains images with `sizeBytes > meta.maxImageBytes`, and you supp
 
 ## Reference
 
-- Format spec: `docs/superpowers/specs/2026-05-25-html-collab-design.md`
-- Template: `skill/template.html` (remote: `https://raw.githubusercontent.com/ljn-hust/html-collab/main/skill/template.html`)
+- Template: `skill/assets/template.html` (remote: `https://raw.githubusercontent.com/ljn-hust/html-collab/main/skill/assets/template.html`)
 - Example: `examples/example.html`
+- Live demo: `index.html` (or https://ljn-hust.github.io/html-collab/)
