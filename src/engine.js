@@ -9,6 +9,16 @@
   let pendingCommentRange = null;   // Selection range when comment toolbar clicked
   let pendingCommentTarget = null;  // data-cid of targeted block
 
+  // ── Auto-save ──────────────────────────────────────────────
+  let autoSaveTimer = null;
+  const AUTOSAVE_DELAY_MS = 3000;  // 3 s debounce after last change
+
+  function scheduleAutoSave() {
+    if (!fileHandle) return;  // only after first manual save establishes the handle
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => saveFile(), AUTOSAVE_DELAY_MS);
+  }
+
   // ── DOM refs ───────────────────────────────────────────────
   const $ = (id) => document.getElementById(id);
   // header is populated inside init() after DOM is ready
@@ -81,6 +91,7 @@
 
   function markDirty() {
     if (!isDirty) { isDirty = true; setStatus('unsaved'); }
+    scheduleAutoSave();
   }
 
   function setStatus(state) {

@@ -7,7 +7,7 @@
   <title>html-collab — Project Introduction</title>
   <style id="collab-styles">
 /* ============================================================
-   collab-html engine styles
+   html-collab engine styles
    All UI text is in English. No i18n.
    ============================================================ */
 
@@ -54,8 +54,9 @@ body {
   font-size: 13px;
 }
 #collab-header button:hover { background: #f0f0f0; }
-#collab-btn-save { background: #2a6f4f; color: #fff; border-color: #2a6f4f; }
-#collab-btn-save:hover { background: #215c3f; }
+/* Higher specificity (200) overrides #collab-header button (101) */
+#collab-header #collab-btn-save { background: #2a6f4f; color: #fff; border-color: #2a6f4f; }
+#collab-header #collab-btn-save:hover { background: #215c3f; }
 
 /* --- Two-column layout --- */
 #collab-layout {
@@ -220,6 +221,7 @@ body {
 
 /* --- Comment bubbles in sidebar --- */
 .collab-comment-bubble {
+  position: relative;
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -241,6 +243,28 @@ body {
 .collab-comment-body { color: #333; }
 .collab-comment-meta { font-size: 11px; color: #aaa; margin-top: 6px; }
 
+/* Delete button on comment bubbles */
+.collab-comment-delete {
+  display: none;
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 3px;
+  border-radius: 3px;
+}
+.collab-comment-delete:hover { color: #c0392b; background: #fef0ef; }
+.collab-comment-bubble:hover .collab-comment-delete { display: inline-block; }
+
+
+/* Language visibility (document-level) */
+html[lang='zh'] .lang-en { display: none; }
+html:not([lang='zh']) .lang-zh { display: none; }
   </style>
 </head>
 <body>
@@ -262,7 +286,12 @@ body {
       <!-- LLM fills this article element with content -->
       <article id="collab-content">
 
-        <h1 data-cid="h-001">html-collab — Project Introduction</h1>
+        <!-- Document-level UI: language toggle — default English -->
+        <div style="text-align: right; margin-bottom: 4px;">
+          <button id="lang-toggle" style="padding: 3px 10px; border-radius: 5px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 12px; font-weight: 600; color: #555;">中文</button>
+        </div>
+
+                <h1 data-cid="h-001">html-collab — Project Introduction</h1>
 
         <p data-cid="p-001">collab-html is a lightweight, open-source format for LLM–human collaborative document editing. It represents an entire working document — content, annotations, and inline edits — as a single self-contained <code>.html</code> file that can be opened in Chrome, annotated by a human, and fed back to an LLM for the next revision cycle.</p>
 
@@ -485,6 +514,16 @@ if (typeof module !== 'undefined' && module.exports) {
   let pendingCommentRange = null;   // Selection range when comment toolbar clicked
   let pendingCommentTarget = null;  // data-cid of targeted block
 
+  // ── Auto-save ──────────────────────────────────────────────
+  let autoSaveTimer = null;
+  const AUTOSAVE_DELAY_MS = 3000;  // 3 s debounce after last change
+
+  function scheduleAutoSave() {
+    if (!fileHandle) return;  // only after first manual save establishes the handle
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => saveFile(), AUTOSAVE_DELAY_MS);
+  }
+
   // ── DOM refs ───────────────────────────────────────────────
   const $ = (id) => document.getElementById(id);
   // header is populated inside init() after DOM is ready
@@ -557,6 +596,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
   function markDirty() {
     if (!isDirty) { isDirty = true; setStatus('unsaved'); }
+    scheduleAutoSave();
   }
 
   function setStatus(state) {
@@ -815,6 +855,7 @@ if (typeof module !== 'undefined' && module.exports) {
     bubble.className = 'collab-comment-bubble';
     bubble.dataset.commentId = comment.id;
     bubble.innerHTML = `
+      <button class="collab-comment-delete" aria-label="Delete comment" title="Delete comment">×</button>
       <div class="collab-comment-quote">${escapeHtml(comment.quote)}</div>
       <div class="collab-comment-body">${escapeHtml(comment.text)}</div>
       ${comment.images.map(img =>
@@ -824,7 +865,36 @@ if (typeof module !== 'undefined' && module.exports) {
       ).join('')}
       <div class="collab-comment-meta">${new Date(comment.timestamp).toLocaleString()}</div>
     `;
+    // Wire delete button imperatively after innerHTML (avoids inline onclick)
+    bubble.querySelector('.collab-comment-delete')
+      .addEventListener('click', (e) => { e.stopPropagation(); deleteComment(comment.id); });
     list.appendChild(bubble);
+  }
+
+  function deleteComment(id) {
+    // 1. Remove from collab-data
+    const data = getCollabData(document);
+    data.comments = data.comments.filter(c => c.id !== id);
+    setCollabData(document, data);
+
+    // 2. Unwrap <mark> in article — preserve text content, remove wrapper element
+    const mark = $('collab-content')
+      .querySelector(`.collab-highlight[data-comment-id="${id}"]`);
+    if (mark) {
+      const parent = mark.parentNode;
+      while (mark.firstChild) {
+        parent.insertBefore(mark.firstChild, mark);
+      }
+      parent.removeChild(mark);
+    }
+
+    // 3. Remove bubble from sidebar
+    const bubble = $('collab-comments-list')
+      .querySelector(`.collab-comment-bubble[data-comment-id="${id}"]`);
+    if (bubble) bubble.remove();
+
+    // 4. Mark document dirty
+    markDirty();
   }
 
   function escapeHtml(str) {
@@ -887,6 +957,20 @@ if (typeof module !== 'undefined' && module.exports) {
 })();
 
   </script>
+
+
+<script>
+/* Document-level language toggle — not part of html-collab engine */
+(function () {
+  var btn = document.getElementById('lang-toggle');
+  if (!btn) return;
+  btn.addEventListener('click', function () {
+    var isZh = document.documentElement.lang === 'zh';
+    document.documentElement.lang = isZh ? 'en' : 'zh';
+    btn.textContent = isZh ? '中文' : 'EN';
+  });
+})();
+</script>
 
 </body>
 </html>

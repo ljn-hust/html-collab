@@ -46,8 +46,9 @@ body {
   font-size: 13px;
 }
 #collab-header button:hover { background: #f0f0f0; }
-#collab-btn-save { background: #2a6f4f; color: #fff; border-color: #2a6f4f; }
-#collab-btn-save:hover { background: #215c3f; }
+/* Higher specificity (200) overrides #collab-header button (101) */
+#collab-header #collab-btn-save { background: #2a6f4f; color: #fff; border-color: #2a6f4f; }
+#collab-header #collab-btn-save:hover { background: #215c3f; }
 
 /* --- Two-column layout --- */
 #collab-layout {
