@@ -1,51 +1,28 @@
 # html-collab
 
-A lightweight, open-source format for LLM–human collaborative document editing.
+Single-file HTML format for LLM–human collaborative document editing.
 
-One `.html` file contains LLM-generated content, human annotations, and inline edits —
-all readable by the next LLM call. Open in Chrome, annotate, save, feed back to AI.
+**This project documents itself.** Download [`index.html`](./index.html) and open it in Chrome — that file *is* the documentation, and it's built with html-collab.
+
+## What it does
+
+One `.html` file holds LLM-generated content, human annotations (comments + inline edits), and everything the AI needs to produce the next revision. No server, no install, no account.
 
 ## Quick start
 
-**For humans (Chrome):**
-1. Open any `.html` file built with html-collab in Chrome
-2. Select text → `+ Comment` to add a comment (paste screenshots with Ctrl+V)
-3. Hover a paragraph → `✎ Edit` to edit inline (Ctrl+Enter to confirm)
-4. `Ctrl+S` to save
+**As a human reviewer (Chrome):**
+1. Open any html-collab `.html` file in Chrome
+2. Select text → **+ Comment** · Hover paragraph → **✎ Edit**
+3. `Ctrl+S` to save — hand the file back to your AI
 
-**For LLMs:** See `skill/SKILL.md` for GENERATE / READ / REVISE instructions.
+**As an LLM:** load `skill/SKILL.md` and follow the GENERATE / READ / REVISE instructions.
 
-## Build
-
-```bash
-node build.js
-# → dist/collab-template.html
-```
-
-No npm install required.
-
-## Run tests
+## Build from source
 
 ```bash
-node --test tests/utils.test.js tests/build.test.js
+node build.js        # → dist/collab-template.html
+node --test          # run tests
 ```
-
-## Format
-
-An html-collab file has four layers:
-
-| Layer | Element | Description |
-|-------|---------|-------------|
-| Content | `<article id="collab-content">` | LLM-generated HTML with `data-cid` on every block |
-| Data | `<script id="collab-data" type="application/json">` | JSON island: comments, edits, meta |
-| Styles | `<style id="collab-styles">` | Inlined annotation UI CSS |
-| Engine | `<script id="collab-engine">` | Inlined vanilla JS annotation engine |
-
-See `docs/superpowers/specs/2026-05-25-collab-html-design.md` for the full spec.
-
-## Browser support
-
-Chrome desktop only (requires [File System Access API](https://developer.chrome.com/docs/capabilities/web-apis/file-system-access)).
 
 ## License
 
