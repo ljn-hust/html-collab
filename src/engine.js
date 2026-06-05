@@ -29,7 +29,6 @@
     header = {
       title: $('collab-title-display'),
       status: $('collab-save-status'),
-      btnOpen: $('collab-btn-open'),
       btnSave: $('collab-btn-save'),
     };
 
@@ -42,7 +41,6 @@
     attachEditButtons();
     renderState();
 
-    header.btnOpen.addEventListener('click', openFile);
     header.btnSave.addEventListener('click', saveFile);
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveFile(); }
@@ -52,23 +50,6 @@
   }
 
   // ── File access ────────────────────────────────────────────
-  async function openFile() {
-    const [handle] = await window.showOpenFilePicker({
-      types: [{ description: 'html-collab documents', accept: { 'text/html': ['.html'] } }],
-    });
-    // Note: document.write() replaces the entire page including this IIFE.
-    // The new document's embedded engine script re-executes from scratch,
-    // which means fileHandle will be reset to null in the new instance.
-    // This is intentional and consistent with the spec (Section 4.3):
-    // "FileHandle is session-scoped; re-opening the tab requires showSaveFilePicker again."
-    // The first Ctrl+S after opening a file will trigger showSaveFilePicker.
-    const file = await handle.getFile();
-    const html = await file.text();
-    document.open();
-    document.write(html);
-    document.close();
-  }
-
   async function saveFile() {
     try {
       if (!fileHandle) {

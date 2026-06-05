@@ -261,10 +261,6 @@ body {
 .collab-comment-delete:hover { color: #c0392b; background: #fef0ef; }
 .collab-comment-bubble:hover .collab-comment-delete { display: inline-block; }
 
-
-/* Language visibility (document-level) */
-html[lang='zh'] .lang-en { display: none; }
-html:not([lang='zh']) .lang-zh { display: none; }
   </style>
 </head>
 <body>
@@ -276,7 +272,6 @@ html:not([lang='zh']) .lang-zh { display: none; }
     </div>
     <div id="collab-header-right">
       <span id="collab-save-status"></span>
-      <button id="collab-btn-open">Open File</button>
       <button id="collab-btn-save">Save</button>
     </div>
   </header>
@@ -534,7 +529,6 @@ if (typeof module !== 'undefined' && module.exports) {
     header = {
       title: $('collab-title-display'),
       status: $('collab-save-status'),
-      btnOpen: $('collab-btn-open'),
       btnSave: $('collab-btn-save'),
     };
 
@@ -547,7 +541,6 @@ if (typeof module !== 'undefined' && module.exports) {
     attachEditButtons();
     renderState();
 
-    header.btnOpen.addEventListener('click', openFile);
     header.btnSave.addEventListener('click', saveFile);
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveFile(); }
@@ -557,23 +550,6 @@ if (typeof module !== 'undefined' && module.exports) {
   }
 
   // ── File access ────────────────────────────────────────────
-  async function openFile() {
-    const [handle] = await window.showOpenFilePicker({
-      types: [{ description: 'html-collab documents', accept: { 'text/html': ['.html'] } }],
-    });
-    // Note: document.write() replaces the entire page including this IIFE.
-    // The new document's embedded engine script re-executes from scratch,
-    // which means fileHandle will be reset to null in the new instance.
-    // This is intentional and consistent with the spec (Section 4.3):
-    // "FileHandle is session-scoped; re-opening the tab requires showSaveFilePicker again."
-    // The first Ctrl+S after opening a file will trigger showSaveFilePicker.
-    const file = await handle.getFile();
-    const html = await file.text();
-    document.open();
-    document.write(html);
-    document.close();
-  }
-
   async function saveFile() {
     try {
       if (!fileHandle) {
