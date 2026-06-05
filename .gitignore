@@ -4,3 +4,4 @@ dist/*.html
 .claude/
 .env
 *.log
+docs/superpowers/
