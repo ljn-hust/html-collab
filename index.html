@@ -307,6 +307,11 @@ html[lang='zh'] .lang-en { display: none; }
           <span class="lang-zh">与庞杂的协作编辑平台不同，html-collab 无需服务器、无需安装、无需账号。文件本身就是协作媒介：AI 理解人类反馈所需的一切都直接嵌入在 HTML 中，任何文本模型或多模态模型都可以读取。</span>
         </p>
 
+        <p data-cid="p-009">
+          <span class="lang-en">The html-collab skill is designed to be compatible with both OpenClaw and Claude Code — any AI environment that supports the skill format can participate in the review cycle.</span>
+          <span class="lang-zh">该 skill 专为兼容 OpenClaw 和 Claude Code 而设计——任何支持 skill 格式的 AI 环境均可参与协作审阅循环。</span>
+        </p>
+
         <section data-cid="sec-001">
           <h2 data-cid="h-002">
             <span class="lang-en">The Collaboration Cycle</span>
@@ -330,6 +335,10 @@ html[lang='zh'] .lang-en { display: none; }
               <span class="lang-zh"><strong>修订（REVISE）</strong> — 带批注的文件反馈给 LLM。模型逐字应用人类编辑，解决评论，生成新的干净版本，重置批注层以备下一轮。</span>
             </li>
           </ul>
+          <p data-cid="p-010">
+            <span class="lang-en">The cycle can also be triggered by a file shared between people. Every html-collab document carries an AI Bootstrap comment that automatically directs any AI to the skill instructions — so when you send an annotated file to a colleague, their AI picks up exactly where yours left off, bringing its own context and skills to the next revision. This human-to-human, AI-to-AI relay is one of the most powerful use cases for html-collab: the format enables true distributed collaboration without any shared infrastructure.</span>
+            <span class="lang-zh">协作循环也可以从他人发来的文件开始。每个 html-collab 文档都内嵌 AI Bootstrap 注释，会自动引导任何 AI 找到相应的 skill 说明。这意味着你将带批注的文件发给同事后，他们的 AI 会无缝接续你的工作，结合自身上下文甚至是自己的 skill 继续推进下一轮修订。这种人传人、AI 接力的协作方式，不依赖任何共享基础设施，是 html-collab 最重要的应用场景之一。</span>
+          </p>
         </section>
 
         <section data-cid="sec-002">
@@ -482,7 +491,7 @@ html[lang='zh'] .lang-en { display: none; }
   "meta": {
     "title": "html-collab — Project Introduction",
     "originalCreated": "2026-05-26T12:00:00Z",
-    "lastRevised": "2026-06-06T00:00:00Z",
+    "lastRevised": "2026-06-06T12:00:00Z",
     "model": "claude-sonnet-4-6",
     "maxImageBytes": 51200,
     "imageStorage": "base64",
