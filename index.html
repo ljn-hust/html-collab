@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="generator" content="collab-html/0.1">
-  <title>html-collab — Project Introduction</title>
+  <meta name="generator" content="html-collab/0.1">
+  <title>html-collab — Project Introduction — html-collab</title>
   <style id="collab-styles">
 /* ============================================================
    html-collab engine styles
@@ -262,6 +262,13 @@ body {
 .collab-comment-bubble:hover .collab-comment-delete { display: inline-block; }
 
   </style>
+
+  <!-- Document-level: language visibility -->
+  <style>
+.lang-zh { display: none; }
+html[lang='zh'] .lang-zh { display: inline; }
+html[lang='zh'] .lang-en { display: none; }
+  </style>
 </head>
 <body>
 
@@ -278,7 +285,6 @@ body {
 
   <div id="collab-layout">
     <main id="collab-main">
-      <!-- LLM fills this article element with content -->
       <article id="collab-content">
 
         <!-- Document-level UI: language toggle — default English -->
@@ -286,60 +292,150 @@ body {
           <button id="lang-toggle" style="padding: 3px 10px; border-radius: 5px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 12px; font-weight: 600; color: #555;">中文</button>
         </div>
 
-                <h1 data-cid="h-001">html-collab — Project Introduction</h1>
+        <h1 data-cid="h-001">
+          <span class="lang-en">html-collab — Project Introduction</span>
+          <span class="lang-zh">html-collab — 项目介绍</span>
+        </h1>
 
-        <p data-cid="p-001">collab-html is a lightweight, open-source format for LLM–human collaborative document editing. It represents an entire working document — content, annotations, and inline edits — as a single self-contained <code>.html</code> file that can be opened in Chrome, annotated by a human, and fed back to an LLM for the next revision cycle.</p>
+        <p data-cid="p-001">
+          <span class="lang-en">html-collab is a lightweight, open-source format for LLM–human collaborative document editing. It represents an entire working document — content, annotations, and inline edits — as a single self-contained <code>.html</code> file that can be opened in Chrome, annotated by a human, and fed back to an LLM for the next revision cycle.</span>
+          <span class="lang-zh">html-collab 是一种轻量、开源的 LLM–人类协作文档编辑格式。它将整个工作文档（内容、批注和内联编辑）表示为单个自包含的 <code>.html</code> 文件，可在 Chrome 中打开，由人类批注，然后反馈给 LLM 进行下一轮修订。</span>
+        </p>
 
-        <p data-cid="p-002">Unlike heavyweight collaborative editing platforms, collab-html requires no server, no install, and no account. The file itself is the collaboration medium: everything the AI needs to understand human feedback is embedded directly inside the HTML, readable by any text model or multimodal model.</p>
+        <p data-cid="p-002">
+          <span class="lang-en">Unlike heavyweight collaborative editing platforms, html-collab requires no server, no install, and no account. The file itself is the collaboration medium: everything the AI needs to understand human feedback is embedded directly inside the HTML, readable by any text model or multimodal model.</span>
+          <span class="lang-zh">与庞杂的协作编辑平台不同，html-collab 无需服务器、无需安装、无需账号。文件本身就是协作媒介：AI 理解人类反馈所需的一切都直接嵌入在 HTML 中，任何文本模型或多模态模型都可以读取。</span>
+        </p>
 
         <section data-cid="sec-001">
-          <h2 data-cid="h-002">The Collaboration Cycle</h2>
-          <p data-cid="p-003">collab-html defines a three-mode workflow that turns a single file into a complete human-AI editing loop:</p>
+          <h2 data-cid="h-002">
+            <span class="lang-en">The Collaboration Cycle</span>
+            <span class="lang-zh">协作循环</span>
+          </h2>
+          <p data-cid="p-003">
+            <span class="lang-en">html-collab defines a three-mode workflow that turns a single file into a complete human-AI editing loop:</span>
+            <span class="lang-zh">html-collab 定义了三种操作模式，将单个文件转变为完整的人机编辑循环：</span>
+          </p>
           <ul>
-            <li data-cid="li-001"><strong>GENERATE</strong> — The LLM produces a structured HTML document from the collab-template, assigning stable <code>data-cid</code> identifiers to every block element and initializing an empty annotation data island.</li>
-            <li data-cid="li-002"><strong>Annotate</strong> — The human opens the file in Chrome. They select text to leave comments (with optional screenshot pastes), or hover over paragraphs to make inline edits with tracked diffs. All feedback is serialized into the file's JSON island on save.</li>
-            <li data-cid="li-003"><strong>REVISE</strong> — The annotated file is fed back to the LLM. The model applies human edits verbatim, addresses comments, and produces a new clean version — resetting the annotation layer for the next round.</li>
+            <li data-cid="li-001">
+              <span class="lang-en"><strong>GENERATE</strong> — The LLM produces a structured HTML document from the collab-template, assigning stable <code>data-cid</code> identifiers to every block element and initializing an empty annotation data island.</span>
+              <span class="lang-zh"><strong>生成（GENERATE）</strong> — LLM 从 collab-template 生成结构化 HTML 文档，为每个块级元素分配稳定的 <code>data-cid</code> 标识符，并初始化空的批注数据岛。</span>
+            </li>
+            <li data-cid="li-002">
+              <span class="lang-en"><strong>Annotate</strong> — The human opens the file in Chrome. They select text to leave comments (with optional screenshot pastes), or hover over paragraphs to make inline edits with tracked diffs. All feedback is serialized into the file's JSON island on save.</span>
+              <span class="lang-zh"><strong>批注（Annotate）</strong> — 人类在 Chrome 中打开文件，选择文本留下评论（可选截图粘贴），或悬停在段落上进行带追踪差异的内联编辑。保存时，所有反馈序列化到文件的 JSON 数据岛中。</span>
+            </li>
+            <li data-cid="li-003">
+              <span class="lang-en"><strong>REVISE</strong> — The annotated file is fed back to the LLM. The model applies human edits verbatim, addresses comments, and produces a new clean version — resetting the annotation layer for the next round.</span>
+              <span class="lang-zh"><strong>修订（REVISE）</strong> — 带批注的文件反馈给 LLM。模型逐字应用人类编辑，解决评论，生成新的干净版本，重置批注层以备下一轮。</span>
+            </li>
           </ul>
         </section>
 
         <section data-cid="sec-002">
-          <h2 data-cid="h-003">File Format</h2>
-          <p data-cid="p-004">Every collab-html document is a single <code>.html</code> file with four logical layers embedded in it:</p>
+          <h2 data-cid="h-003">
+            <span class="lang-en">File Format</span>
+            <span class="lang-zh">文件格式</span>
+          </h2>
+          <p data-cid="p-004">
+            <span class="lang-en">Every html-collab document is a single <code>.html</code> file with four logical layers embedded in it:</span>
+            <span class="lang-zh">每个 html-collab 文档都是单个 <code>.html</code> 文件，内嵌四个逻辑层：</span>
+          </p>
           <ul>
-            <li data-cid="li-004"><strong>Content layer</strong> — <code>&lt;article id="collab-content"&gt;</code>: the LLM-generated document body, with every block element carrying a stable <code>data-cid</code> attribute (e.g. <code>p-001</code>, <code>h-002</code>, <code>sec-001</code>).</li>
-            <li data-cid="li-005"><strong>Data layer</strong> — <code>&lt;script type="application/json" id="collab-data"&gt;</code>: a JSON island holding all comments, inline edits, and document metadata. Not executed by the browser; readable by any LLM.</li>
-            <li data-cid="li-006"><strong>Style layer</strong> — <code>&lt;style id="collab-styles"&gt;</code>: inlined CSS providing the full annotation UI — header, comment sidebar, highlight styles, edit diff display.</li>
-            <li data-cid="li-007"><strong>Engine layer</strong> — <code>&lt;script id="collab-engine"&gt;</code>: inlined vanilla JavaScript (~600 lines) that drives the entire annotation experience. Zero npm dependencies; no build step required to view.</li>
+            <li data-cid="li-004">
+              <span class="lang-en"><strong>Content layer</strong> — <code>&lt;article id="collab-content"&gt;</code>: the LLM-generated document body, with every block element carrying a stable <code>data-cid</code> attribute (e.g. <code>p-001</code>, <code>h-002</code>, <code>sec-001</code>).</span>
+              <span class="lang-zh"><strong>内容层</strong> — <code>&lt;article id="collab-content"&gt;</code>：LLM 生成的文档正文，每个块级元素都带有稳定的 <code>data-cid</code> 属性（如 <code>p-001</code>、<code>h-002</code>、<code>sec-001</code>）。</span>
+            </li>
+            <li data-cid="li-005">
+              <span class="lang-en"><strong>Data layer</strong> — <code>&lt;script type="application/json" id="collab-data"&gt;</code>: a JSON island holding all comments, inline edits, and document metadata. Not executed by the browser; readable by any LLM.</span>
+              <span class="lang-zh"><strong>数据层</strong> — <code>&lt;script type="application/json" id="collab-data"&gt;</code>：持有所有评论、内联编辑和文档元数据的 JSON 数据岛。不被浏览器执行；任何 LLM 都可读取。</span>
+            </li>
+            <li data-cid="li-006">
+              <span class="lang-en"><strong>Style layer</strong> — <code>&lt;style id="collab-styles"&gt;</code>: inlined CSS providing the full annotation UI — header, comment sidebar, highlight styles, edit diff display.</span>
+              <span class="lang-zh"><strong>样式层</strong> — <code>&lt;style id="collab-styles"&gt;</code>：内联 CSS，提供完整的批注 UI——顶栏、评论侧边栏、高亮样式、编辑差异显示。</span>
+            </li>
+            <li data-cid="li-007">
+              <span class="lang-en"><strong>Engine layer</strong> — <code>&lt;script id="collab-engine"&gt;</code>: inlined vanilla JavaScript (~600 lines) that drives the entire annotation experience. Zero npm dependencies; no build step required to view.</span>
+              <span class="lang-zh"><strong>引擎层</strong> — <code>&lt;script id="collab-engine"&gt;</code>：内联原生 JavaScript（约 600 行），驱动整个批注体验。零 npm 依赖；无需构建步骤即可查看。</span>
+            </li>
           </ul>
         </section>
 
         <section data-cid="sec-003">
-          <h2 data-cid="h-004">Key Features</h2>
+          <h2 data-cid="h-004">
+            <span class="lang-en">Key Features</span>
+            <span class="lang-zh">核心特性</span>
+          </h2>
           <ul>
-            <li data-cid="li-008"><strong>Portable</strong> — One <code>.html</code> file carries everything: content, annotations, styles, and engine. Email it, commit it, or drop it in a shared folder.</li>
-            <li data-cid="li-009"><strong>AI-native</strong> — The JSON data island is designed to be read and written by LLMs. The <code>extractLLMContext()</code> utility formats all human feedback into a clean, compact context block for model consumption.</li>
-            <li data-cid="li-010"><strong>Screenshot support</strong> — Humans can paste screenshots directly into comments (Ctrl+V). Images are stored as base64 inside the file, with a configurable size limit and automatic placeholder substitution when building LLM context.</li>
-            <li data-cid="li-011"><strong>Inline diff tracking</strong> — Edited paragraphs show strikethrough originals alongside green revised text. The diff is stored in <code>collab-data.edits</code> so the LLM always has both versions.</li>
-            <li data-cid="li-012"><strong>Zero dependencies</strong> — Built with vanilla JS, native CSS, and the browser's File System Access API. Node.js built-in <code>node:test</code> covers the test suite. No npm install ever required.</li>
+            <li data-cid="li-008">
+              <span class="lang-en"><strong>Portable</strong> — One <code>.html</code> file carries everything: content, annotations, styles, and engine. Email it, commit it, or drop it in a shared folder.</span>
+              <span class="lang-zh"><strong>可移植</strong> — 单个 <code>.html</code> 文件携带一切：内容、批注、样式和引擎。可通过邮件发送、提交到 git 或放入共享文件夹。</span>
+            </li>
+            <li data-cid="li-009">
+              <span class="lang-en"><strong>AI-native</strong> — The JSON data island is designed to be read and written by LLMs. The <code>extractLLMContext()</code> utility formats all human feedback into a clean, compact context block for model consumption.</span>
+              <span class="lang-zh"><strong>AI 原生</strong> — JSON 数据岛专为 LLM 读写设计。<code>extractLLMContext()</code> 工具将所有人类反馈格式化为简洁的上下文块，供模型消费。</span>
+            </li>
+            <li data-cid="li-010">
+              <span class="lang-en"><strong>Screenshot support</strong> — Humans can paste screenshots directly into comments (Ctrl+V). Images are stored as base64 inside the file, with a configurable size limit and automatic placeholder substitution when building LLM context.</span>
+              <span class="lang-zh"><strong>截图支持</strong> — 人类可以直接粘贴截图到评论中（Ctrl+V）。图片以 base64 格式存储在文件内，可配置大小限制，构建 LLM 上下文时自动替换为占位符。</span>
+            </li>
+            <li data-cid="li-011">
+              <span class="lang-en"><strong>Inline diff tracking</strong> — Edited paragraphs show strikethrough originals alongside green revised text. The diff is stored in <code>collab-data.edits</code> so the LLM always has both versions.</span>
+              <span class="lang-zh"><strong>内联差异追踪</strong> — 已编辑的段落显示带删除线的原始文本和绿色的修订文本。差异存储在 <code>collab-data.edits</code> 中，LLM 始终可以看到两个版本。</span>
+            </li>
+            <li data-cid="li-012">
+              <span class="lang-en"><strong>Zero dependencies</strong> — Built with vanilla JS, native CSS, and the browser's File System Access API. Node.js built-in <code>node:test</code> covers the test suite. No npm install ever required.</span>
+              <span class="lang-zh"><strong>零依赖</strong> — 使用原生 JS、CSS 和浏览器 File System Access API 构建。Node.js 内置 <code>node:test</code> 覆盖测试套件。无需 npm install。</span>
+            </li>
           </ul>
         </section>
 
         <section data-cid="sec-004">
-          <h2 data-cid="h-005">Getting Started</h2>
-          <p data-cid="p-005">To use collab-html as a human reviewer:</p>
+          <h2 data-cid="h-005">
+            <span class="lang-en">Getting Started</span>
+            <span class="lang-zh">快速开始</span>
+          </h2>
+          <p data-cid="p-005">
+            <span class="lang-en">To use html-collab as a human reviewer:</span>
+            <span class="lang-zh">作为人类审阅者使用 html-collab：</span>
+          </p>
           <ul>
-            <li data-cid="li-013">Open any <code>.html</code> file built with collab-html in Chrome (desktop).</li>
-            <li data-cid="li-014">Select text and click <strong>+ Comment</strong> to annotate. Paste a screenshot with Ctrl+V to attach it to the comment.</li>
-            <li data-cid="li-015">Hover over any paragraph and click <strong>✎ Edit</strong> to make an inline edit. Press Ctrl+Enter to confirm — the original and revised text are both saved.</li>
-            <li data-cid="li-016">Press Ctrl+S to save the annotated file. Hand it back to the LLM for the next revision.</li>
+            <li data-cid="li-013">
+              <span class="lang-en">Open any <code>.html</code> file built with html-collab in Chrome (desktop).</span>
+              <span class="lang-zh">在 Chrome（桌面版）中打开任何基于 html-collab 构建的 <code>.html</code> 文件。</span>
+            </li>
+            <li data-cid="li-014">
+              <span class="lang-en">Select text and click <strong>+ Comment</strong> to annotate. Paste a screenshot with Ctrl+V to attach it to the comment.</span>
+              <span class="lang-zh">选择文本并点击 <strong>+ Comment</strong> 进行批注，按 Ctrl+V 粘贴截图附加到评论。</span>
+            </li>
+            <li data-cid="li-015">
+              <span class="lang-en">Hover over any paragraph and click <strong>✎ Edit</strong> to make an inline edit. Press Ctrl+Enter to confirm — the original and revised text are both saved.</span>
+              <span class="lang-zh">悬停在任意段落上并点击 <strong>✎ Edit</strong> 进行内联编辑，按 Ctrl+Enter 确认——原始文本和修订文本均会保存。</span>
+            </li>
+            <li data-cid="li-016">
+              <span class="lang-en">Press Ctrl+S to save the annotated file. Hand it back to the LLM for the next revision.</span>
+              <span class="lang-zh">按 Ctrl+S 保存带批注的文件，将其返回给 LLM 进行下一轮修订。</span>
+            </li>
           </ul>
-          <p data-cid="p-006">To use collab-html as an LLM, load <code>skill/SKILL.md</code> and follow the GENERATE, READ, or REVISE instructions appropriate to the current task.</p>
+          <p data-cid="p-006">
+            <span class="lang-en">To use html-collab as an LLM, load <code>skill/SKILL.md</code> and follow the GENERATE, READ, or REVISE instructions appropriate to the current task.</span>
+            <span class="lang-zh">作为 LLM 使用 html-collab，请加载 <code>skill/SKILL.md</code> 并按照适用于当前任务的 GENERATE、READ 或 REVISE 指令操作。</span>
+          </p>
         </section>
 
         <section data-cid="sec-005">
-          <h2 data-cid="h-006">Design Principles</h2>
-          <p data-cid="p-007">collab-html is built around three constraints that guided every design decision: the document must be completely self-contained (no external assets or servers), the format must be readable by both humans and LLMs without any special tooling, and the annotation layer must never get in the way of the content layer. These constraints make it suitable for async, offline, and air-gapped workflows where a simpler tool would require a live connection.</p>
-          <p data-cid="p-008">The project is MIT licensed and designed to be forked, extended, and embedded. The engine source lives in <code>src/engine.js</code> and <code>src/utils.js</code>; the build step is a single <code>node build.js</code> with no dependencies. Contributions welcome.</p>
+          <h2 data-cid="h-006">
+            <span class="lang-en">Design Principles</span>
+            <span class="lang-zh">设计原则</span>
+          </h2>
+          <p data-cid="p-007">
+            <span class="lang-en">html-collab is built around three constraints that guided every design decision: the document must be completely self-contained (no external assets or servers), the format must be readable by both humans and LLMs without any special tooling, and the annotation layer must never get in the way of the content layer. These constraints make it suitable for async, offline, and air-gapped workflows where a simpler tool would require a live connection.</span>
+            <span class="lang-zh">html-collab 围绕三个约束构建，这些约束指导了每一个设计决策：文档必须完全自包含（无外部资产或服务器），格式必须无需任何特殊工具即可被人类和 LLM 读取，批注层绝不能妨碍内容层。这些约束使其适用于异步、离线和气隙工作流，而简单工具在这些场景下需要实时连接。</span>
+          </p>
+          <p data-cid="p-008">
+            <span class="lang-en">The project is MIT licensed and designed to be forked, extended, and embedded. The engine source lives in <code>dev/src/engine.js</code> and <code>dev/src/utils.js</code>; the build step is a single <code>node dev/build.js</code> with no dependencies. Contributions welcome.</span>
+            <span class="lang-zh">该项目采用 MIT 许可证，设计为可派生、扩展和嵌入的。引擎源码位于 <code>dev/src/engine.js</code> 和 <code>dev/src/utils.js</code>；构建步骤只需一个无依赖的 <code>node dev/build.js</code>。欢迎贡献。</span>
+          </p>
         </section>
 
       </article>
@@ -378,7 +474,7 @@ body {
     and REVISE (apply feedback and produce a new version).
   -->
 
-    <!-- NOTE: originalCreated and lastRevised are filled by LLM at GENERATE time -->
+  <!-- NOTE: originalCreated and lastRevised are filled by LLM at GENERATE time -->
   <!-- collab-data JSON island — machine-readable, not rendered -->
   <script type="application/json" id="collab-data">
 {
@@ -386,8 +482,8 @@ body {
   "meta": {
     "title": "html-collab — Project Introduction",
     "originalCreated": "2026-05-26T12:00:00Z",
-    "lastRevised": "2026-05-26T12:00:00Z",
-    "model": "claude-sonnet-4-5",
+    "lastRevised": "2026-06-06T00:00:00Z",
+    "model": "claude-sonnet-4-6",
     "maxImageBytes": 512000,
     "imageStorage": "base64"
   },
@@ -933,7 +1029,6 @@ if (typeof module !== 'undefined' && module.exports) {
 })();
 
   </script>
-
 
 <script>
 /* Document-level language toggle — not part of html-collab engine */
