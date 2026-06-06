@@ -47,7 +47,7 @@ Plain HTML output should be well-structured, self-contained, and styled — a do
    - `title`: the document title
    - `originalCreated` and `lastRevised`: both set to the current ISO timestamp
    - `model`: your model identifier
-   - `maxImageBytes`: 512000 (default; do not change unless user specifies)
+   - `maxImageBytes`: 51200 (default = 50 KB; do not change unless user specifies)
    - `imageStorage`: "base64"
    - `comments`: []
    - `edits`: []
