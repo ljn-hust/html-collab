@@ -71,7 +71,7 @@ Plain HTML output should be well-structured, self-contained, and styled — a do
 
 1. Parse `<article id="collab-content">` — this is the document text.
 2. Parse the JSON inside `<script type="application/json" id="collab-data">`.
-3. Build and present this context block:
+3. Build and present this context block **in the conversation before doing anything else**:
 
 ```
 [DOCUMENT CONTENT]
@@ -85,6 +85,8 @@ Comments:
 Edits:
   · [<target>] "<original>" → "<revised>"
 ```
+
+   Always output this block even if there are no comments or edits — it confirms to the user what you read. This conversation record is permanent: REVISE will clear comments and edits from the file, but the feedback is preserved here in the chat history.
 
 4. Image handling — per environment:
    - **Bash tool available (e.g. Claude Code):** For each image where `sizeBytes > meta.maxImageBytes`, compress it with a script and write the compressed base64 back to `data`, update `sizeBytes`, add `"compressedBy": "<model-id>"`. Example using Python/Pillow:
@@ -116,7 +118,7 @@ Edits:
 2. For each entry in `comments`: revise the content of the targeted block to address the feedback. For blocks with both an edit and a comment, apply the edit first, then address the comment.
 3. Add new blocks as needed: assign fresh CIDs continuing from the highest existing number for each type (e.g. if `p-007` exists, next paragraph is `p-008`).
 4. Remove blocks as needed: retire their CIDs permanently — never reuse them.
-5. Output a new complete `.html` file with:
+5. Output the revised `.html` file:
    - Updated `<article>` content
    - All original `data-cid` values preserved (do not reassign existing IDs)
    - `collab-data` reset: `comments: []`, `edits: []`
@@ -125,6 +127,9 @@ Edits:
    - `meta.originalCreated` **unchanged**
    - `meta.versionHash` set to `""` — the engine recomputes this on next browser save
    - `meta.summary` set to `""` — the engine recomputes this on next browser save
+   - **File output by environment:**
+     - **Bash/file access available (e.g. Claude Code):** Write directly over the original file. The conversation history preserves the feedback record; no extra file needed.
+     - **Chat environment (no file access):** Suggest a filename using the document title and today's date — e.g. `market-analysis-20260606.html`. This lets users build a natural version sequence in their folder without manual renaming.
 
 ---
 
