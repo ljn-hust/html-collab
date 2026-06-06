@@ -159,6 +159,11 @@
     const data = getCollabData(document);
     if (!data) return;
 
+    // Remove comment bubbles that were baked into the serialised DOM.
+    // saveFile() uses outerHTML, which captures dynamic bubbles; without this,
+    // reopening the file causes renderState() to render each bubble a second time.
+    $('collab-comments-list').querySelectorAll('.collab-comment-bubble').forEach(b => b.remove());
+
     // Render edits: show diff markup for each saved edit
     for (const edit of data.edits) {
       const el = $('collab-content').querySelector(`[data-cid="${edit.target}"]`);
