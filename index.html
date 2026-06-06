@@ -338,9 +338,20 @@ html[lang='zh'] .lang-en { display: none; }
               <span class="lang-zh"><strong>修订（REVISE）</strong> — 带批注的文件反馈给 LLM。模型逐字应用人类编辑，解决评论，生成新的干净版本，重置批注层以备下一轮。</span>
             </li>
           </ul>
-          <p data-cid="p-010">
-            <span class="lang-en">The cycle can also be triggered by a file shared between people. Every html-collab document carries an AI Bootstrap comment that automatically directs any AI to the skill instructions — so when you send an annotated file to a colleague, their AI picks up exactly where yours left off, bringing its own context and skills to the next revision. This human-to-human, AI-to-AI relay is one of the most powerful use cases for html-collab: the format enables true distributed collaboration without any shared infrastructure.</span>
-            <span class="lang-zh">协作循环也可以从他人发来的文件开始。每个 html-collab 文档都内嵌 AI Bootstrap 注释，会自动引导任何 AI 找到相应的 skill 说明。这意味着你将带批注的文件发给同事后，他们的 AI 会无缝接续你的工作，结合自身上下文甚至是自己的 skill 继续推进下一轮修订。这种人传人、AI 接力的协作方式，不依赖任何共享基础设施，是 html-collab 最重要的应用场景之一。</span>
+        </section>
+
+        <section data-cid="sec-006">
+          <h2 data-cid="h-007">
+            <span class="lang-en">Distributed Collaboration</span>
+            <span class="lang-zh">分布式协作</span>
+          </h2>
+          <p data-cid="p-011">
+            <span class="lang-en">html-collab is designed not just for a single human–AI pair, but for distributed teams. When a colleague sends you an annotated html-collab file — by email, shared folder, or any file transfer — you do not need to be in the same environment or use the same AI tool. Every html-collab document carries an embedded AI Bootstrap comment that automatically directs any compatible AI assistant (Claude Code, OpenClaw, or any skill-compatible environment) to locate and load the html-collab skill before proceeding.</span>
+            <span class="lang-zh">html-collab 的设计不只服务于单一的人机协作对，而是面向分布式团队。当同事将一份带批注的 html-collab 文件发给你——无论通过邮件、共享文件夹还是任何文件传输方式——你无需处于相同的环境，也无需使用相同的 AI 工具。每个 html-collab 文档都内嵌 AI Bootstrap 注释，会自动引导任何兼容的 AI 助手（Claude Code、OpenClaw 或任何支持 skill 的环境）在继续工作前找到并加载 html-collab skill。</span>
+          </p>
+          <p data-cid="p-012">
+            <span class="lang-en">The file itself carries everything needed to continue the collaboration: content, annotations, edit history, and the AI onboarding instructions. No shared server, no account, no synchronization service required. A team distributed across time zones, using different AI tools, can pass a single file back and forth and maintain a coherent, traceable revision history.</span>
+            <span class="lang-zh">文件本身携带了继续协作所需的一切：内容、批注、编辑历史，以及 AI 上手所需的说明。无需共享服务器、无需账号、无需同步服务。跨时区、使用不同 AI 工具的团队，可以通过传递单个文件来维护连贯、可追溯的修订历史。</span>
           </p>
         </section>
 
@@ -499,8 +510,8 @@ html[lang='zh'] .lang-en { display: none; }
   "meta": {
     "title": "html-collab — Project Introduction",
     "originalCreated": "2026-05-26T12:00:00Z",
-    "lastRevised": "2026-06-06T12:00:00Z",
-    "model": "claude-sonnet-4-6",
+    "lastRevised": "2026-06-06T14:00:00Z",
+    "model": "claude-sonnet-4-5",
     "maxImageBytes": 51200,
     "imageStorage": "base64",
     "versionHash": "",
