@@ -468,7 +468,7 @@
         const dataUrl = ev.target.result;
         const sizeBytes = blob.size;
         const data = getCollabData(document);
-        const maxBytes = data?.meta?.maxImageBytes ?? 512000;
+        const maxBytes = data?.meta?.maxImageBytes ?? 51200;
 
         if (sizeBytes > maxBytes) {
           const warn = $('collab-comment-warning');
