@@ -63,6 +63,10 @@ Plain HTML output should be well-structured, self-contained, and styled — a do
 
 **When:** User provides a `.html` file that has been annotated by a human.
 
+**Reading efficiently:**
+- Skip everything between `<!-- collab:llm-skip:start -->` and `<!-- collab:llm-skip:end -->` — this is engine CSS/JS you do not need to parse.
+- If `meta.summary` is present in collab-data, read it first for a compact structural index before parsing the full article.
+
 **Steps:**
 
 1. Parse `<article id="collab-content">` — this is the document text.
@@ -82,9 +86,21 @@ Edits:
   · [<target>] "<original>" → "<revised>"
 ```
 
-4. Image handling:
-   - **Default (text-only model):** replace each image's `data` value with `[screenshot, <size>KB, base64]`. Do not include the raw base64 string.
-   - **Multimodal model:** decode each base64 image and send it as an image input alongside the text context.
+4. Image handling — per environment:
+   - **Bash tool available (e.g. Claude Code):** For each image where `sizeBytes > meta.maxImageBytes`, compress it with a script and write the compressed base64 back to `data`, update `sizeBytes`, add `"compressedBy": "<model-id>"`. Example using Python/Pillow:
+     ```bash
+     python3 - <<'PYEOF'
+     import base64, io, sys
+     from PIL import Image
+     data = base64.b64decode("""PASTE_BASE64_HERE""")
+     img = Image.open(io.BytesIO(data))
+     out = io.BytesIO()
+     img.save(out, 'JPEG', quality=55, optimize=True)
+     print(base64.b64encode(out.getvalue()).decode())
+     PYEOF
+     ```
+   - **Multimodal, no Bash:** Receive the image as a visual input for understanding. In output, set `data` to `null` and add `"compressedBy": null, "description": "<one-sentence summary of the screenshot>"`.
+   - **Text-only model:** Replace each image with `[screenshot, <size>KB, base64-omitted]` in the context block. Do not include the raw base64 string.
 
 5. Where the same `data-cid` appears in both Comments and Edits: the comment's quote reflects the **original** (pre-edit) text. In REVISE, apply the edit first, then interpret the comment against the updated text.
 
@@ -107,15 +123,10 @@ Edits:
    - `meta.lastRevised` updated to current timestamp
    - `meta.model` updated to your model identifier
    - `meta.originalCreated` **unchanged**
+   - `meta.versionHash` set to `""` — the engine recomputes this on next browser save
+   - `meta.summary` set to `""` — the engine recomputes this on next browser save
 
 ---
-
-## Image compression (multimodal models, REVISE mode)
-
-If a comment contains images with `sizeBytes > meta.maxImageBytes`, and you support multimodal input:
-1. Receive the image as a visual input.
-2. Re-encode a compressed version (≤ `maxImageBytes`) to base64.
-3. Write the compressed version to the new file with `"compressedBy": "<your model id>"`.
 
 ---
 

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="html-collab/0.1">
   <title>html-collab document</title>
+  <!-- collab:llm-skip:start — engine styles, not document content -->
   <style id="collab-styles">
 /* ============================================================
    html-collab engine styles
@@ -262,6 +263,7 @@ body {
 .collab-comment-bubble:hover .collab-comment-delete { display: inline-block; }
 
   </style>
+  <!-- collab:llm-skip:end -->
 </head>
 <body>
 
@@ -327,14 +329,17 @@ body {
     "originalCreated": "",
     "lastRevised": "",
     "model": "",
-    "maxImageBytes": 512000,
-    "imageStorage": "base64"
+    "maxImageBytes": 51200,
+    "imageStorage": "base64",
+    "versionHash": "",
+    "summary": ""
   },
   "comments": [],
   "edits": []
 }
   </script>
 
+  <!-- collab:llm-skip:start — engine script, not document content -->
   <script id="collab-engine">
 'use strict';
 
@@ -489,8 +494,59 @@ if (typeof module !== 'undefined' && module.exports) {
   }
 
   // ── File access ────────────────────────────────────────────
+
+  function computeVersionHash() {
+    const article = $('collab-content');
+    if (!article) return '';
+    const text = article.innerText || article.textContent || '';
+    let hash = 5381;
+    for (let i = 0; i < text.length; i++) {
+      hash = (((hash << 5) + hash) ^ text.charCodeAt(i)) >>> 0;
+    }
+    return hash.toString(16).padStart(8, '0');
+  }
+
+  function generateSummary() {
+    const article = $('collab-content');
+    if (!article) return '';
+    const counts = {};
+    article.querySelectorAll('[data-cid]').forEach(el => {
+      const cid = el.dataset.cid || '';
+      if (!cid || cid.startsWith('auto-')) return;
+      const type = cid.split('-')[0];
+      counts[type] = (counts[type] || 0) + 1;
+    });
+    const sections = [];
+    article.querySelectorAll('[data-cid^="sec-"]').forEach(sec => {
+      const h = sec.querySelector('h1,h2,h3,h4,h5,h6');
+      const label = h ? h.textContent.trim().slice(0, 20) : '';
+      sections.push(label ? sec.dataset.cid + '(' + label + ')' : sec.dataset.cid);
+    });
+    const blockStr = Object.entries(counts)
+      .sort(([a], [b]) => (a < b ? -1 : 1))
+      .map(([k, v]) => v + k)
+      .join(',');
+    const data = getCollabData(document);
+    const cCount = (data?.comments || []).length;
+    const eCount = (data?.edits || []).length;
+    const cTargets = (data?.comments || []).map(c => c.target).filter(Boolean).join(',');
+    const eTargets = (data?.edits || []).map(e => e.target).filter(Boolean).join(',');
+    const parts = [];
+    if (sections.length > 0) parts.push('sections:' + sections.join(','));
+    if (blockStr) parts.push('blocks:' + blockStr);
+    parts.push('comments:' + cCount + (cTargets ? '(' + cTargets + ')' : ''));
+    parts.push('edits:' + eCount + (eTargets ? '(' + eTargets + ')' : ''));
+    return parts.join('; ');
+  }
+
   async function saveFile() {
     try {
+      const data = getCollabData(document);
+      if (data) {
+        data.meta.summary = generateSummary();
+        data.meta.versionHash = computeVersionHash();
+        setCollabData(document, data);
+      }
       if (!fileHandle) {
         fileHandle = await window.showSaveFilePicker({
           suggestedName: (getCollabData(document)?.meta?.title || 'document') + '.html',
@@ -872,6 +928,7 @@ if (typeof module !== 'undefined' && module.exports) {
 })();
 
   </script>
+  <!-- collab:llm-skip:end -->
 
 </body>
 </html>

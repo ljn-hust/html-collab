@@ -50,8 +50,77 @@
   }
 
   // ── File access ────────────────────────────────────────────
+
+  /**
+   * djb2-style hash of article text content (8-char hex).
+   * Used to detect whether the document has changed since last save.
+   */
+  function computeVersionHash() {
+    const article = $('collab-content');
+    if (!article) return '';
+    const text = article.innerText || article.textContent || '';
+    let hash = 5381;
+    for (let i = 0; i < text.length; i++) {
+      hash = (((hash << 5) + hash) ^ text.charCodeAt(i)) >>> 0;
+    }
+    return hash.toString(16).padStart(8, '0');
+  }
+
+  /**
+   * Compact structural index of the document for LLM orientation.
+   * Written to meta.summary on every save so LLMs can skip full parsing.
+   * Format: "sections:sec-001(Title); blocks:8p,6h; comments:2(p-001,p-003); edits:1(p-005)"
+   */
+  function generateSummary() {
+    const article = $('collab-content');
+    if (!article) return '';
+
+    // Count named CID blocks by type prefix
+    const counts = {};
+    article.querySelectorAll('[data-cid]').forEach(el => {
+      const cid = el.dataset.cid || '';
+      if (!cid || cid.startsWith('auto-')) return;
+      const type = cid.split('-')[0];
+      counts[type] = (counts[type] || 0) + 1;
+    });
+
+    // List sections with heading label
+    const sections = [];
+    article.querySelectorAll('[data-cid^="sec-"]').forEach(sec => {
+      const h = sec.querySelector('h1,h2,h3,h4,h5,h6');
+      const label = h ? h.textContent.trim().slice(0, 20) : '';
+      sections.push(label ? sec.dataset.cid + '(' + label + ')' : sec.dataset.cid);
+    });
+
+    const blockStr = Object.entries(counts)
+      .sort(([a], [b]) => (a < b ? -1 : 1))
+      .map(([k, v]) => v + k)
+      .join(',');
+
+    const data = getCollabData(document);
+    const cCount = (data?.comments || []).length;
+    const eCount = (data?.edits || []).length;
+    const cTargets = (data?.comments || []).map(c => c.target).filter(Boolean).join(',');
+    const eTargets = (data?.edits || []).map(e => e.target).filter(Boolean).join(',');
+
+    const parts = [];
+    if (sections.length > 0) parts.push('sections:' + sections.join(','));
+    if (blockStr) parts.push('blocks:' + blockStr);
+    parts.push('comments:' + cCount + (cTargets ? '(' + cTargets + ')' : ''));
+    parts.push('edits:' + eCount + (eTargets ? '(' + eTargets + ')' : ''));
+    return parts.join('; ');
+  }
+
   async function saveFile() {
     try {
+      // Update summary and version hash before serialising
+      const data = getCollabData(document);
+      if (data) {
+        data.meta.summary = generateSummary();
+        data.meta.versionHash = computeVersionHash();
+        setCollabData(document, data);
+      }
+
       if (!fileHandle) {
         fileHandle = await window.showSaveFilePicker({
           suggestedName: (getCollabData(document)?.meta?.title || 'document') + '.html',
