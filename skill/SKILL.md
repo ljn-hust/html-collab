@@ -1,6 +1,6 @@
 ---
 name: html-collab
-version: 0.1.0
+version: 0.1.1
 description: >
   Use this skill for any HTML document that will go through LLM–human review cycles.
   Trigger when: the user asks to write, draft, or generate a document for review or feedback;
