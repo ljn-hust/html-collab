@@ -1,6 +1,6 @@
 ---
 name: html-collab
-version: 0.1.1
+version: 0.1.2
 description: >
   Use this skill for any HTML document that will go through LLM–human review cycles.
   Trigger when: the user asks to write, draft, or generate a document for review or feedback;
@@ -36,7 +36,7 @@ Plain HTML output should be well-structured, self-contained, and styled — a do
 
 **Steps:**
 
-1. Start with the content of `skill/assets/template.html` as your base structure (also available at `https://raw.githubusercontent.com/ljn-hust/html-collab/main/skill/assets/template.html`). If you do not have local access, fetch it from the URL above.
+1. Start with the content of `skill/assets/template.html` as your base structure. If you do not have local access to this file, do not fetch it automatically — instead, ask the user to install the skill first (`clawhub install html-collab`) or provide the template file directly.
 2. Fill `<article id="collab-content">` with semantic HTML:
    - Use `<h1>` for the document title, `<h2>` for sections, `<p>` for paragraphs, `<ul>`/`<li>` for lists.
 3. Assign a `data-cid` attribute to **every** block element. Rules:
@@ -138,6 +138,6 @@ Edits:
 
 ## Reference
 
-- Template: `skill/assets/template.html` (remote: `https://raw.githubusercontent.com/ljn-hust/html-collab/main/skill/assets/template.html`)
+- Template: `skill/assets/template.html`
 - Example: `examples/example.html`
 - Live demo: `index.html` (or https://ljn-hust.github.io/html-collab/)
