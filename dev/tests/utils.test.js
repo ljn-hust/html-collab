@@ -21,6 +21,8 @@ const {
   generateCid,
   truncateQuote,
   extractLLMContext,
+  formatTimestamp,
+  suggestSaveFilename,
 } = require('../src/utils.js');
 
 // --- getCollabData ---
@@ -108,4 +110,35 @@ test('extractLLMContext returns empty feedback message when no annotations', () 
   const data = { comments: [], edits: [] };
   const ctx = extractLLMContext(data);
   assert.ok(ctx.includes('No human feedback'));
+});
+
+// --- formatTimestamp ---
+test('formatTimestamp returns yyyymmddhhmm string', () => {
+  const d = new Date(2026, 5, 7, 14, 30);
+  assert.equal(formatTimestamp(d), '202606071430');
+});
+
+test('formatTimestamp zero-pads month, day, hour, minute', () => {
+  const d = new Date(2026, 0, 5, 9, 3);
+  assert.equal(formatTimestamp(d), '202601050903');
+});
+
+// --- suggestSaveFilename ---
+test('suggestSaveFilename returns title-timestamp.html', () => {
+  const d = new Date(2026, 5, 7, 14, 30);
+  assert.equal(suggestSaveFilename('Market Analysis', d), 'Market Analysis-202606071430.html');
+});
+
+test('suggestSaveFilename replaces filesystem-unsafe chars in title', () => {
+  const d = new Date(2026, 5, 7, 14, 30);
+  const result = suggestSaveFilename('Doc: A/B test?', d);
+  assert.ok(!result.includes(':'), 'colon must be replaced');
+  assert.ok(!result.includes('/'), 'slash must be replaced');
+  assert.ok(!result.includes('?'), 'question mark must be replaced');
+  assert.ok(result.endsWith('-202606071430.html'));
+});
+
+test('suggestSaveFilename uses "document" as fallback for empty title', () => {
+  const d = new Date(2026, 5, 7, 14, 30);
+  assert.equal(suggestSaveFilename('', d), 'document-202606071430.html');
 });

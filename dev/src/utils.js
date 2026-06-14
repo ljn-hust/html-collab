@@ -93,7 +93,32 @@ function extractLLMContext(data) {
   return lines.join('\n');
 }
 
+/**
+ * Format a Date object to yyyymmddhhmm string using LOCAL time.
+ * @param {Date} date - Date object (defaults to now if omitted)
+ * @returns {string} - formatted timestamp in yyyymmddhhmm format
+ */
+function formatTimestamp(date) {
+  const d = date instanceof Date ? date : new Date();
+  return d.getFullYear().toString()
+    + String(d.getMonth() + 1).padStart(2, '0')
+    + String(d.getDate()).padStart(2, '0')
+    + String(d.getHours()).padStart(2, '0')
+    + String(d.getMinutes()).padStart(2, '0');
+}
+
+/**
+ * Generate a safe HTML filename from a title and optional date.
+ * @param {string} title - document title (sanitized to replace filesystem-unsafe chars)
+ * @param {Date} date - Date object (defaults to now if omitted)
+ * @returns {string} - filename in format '<safe-title>-<yyyymmddhhmm>.html'
+ */
+function suggestSaveFilename(title, date) {
+  const safe = (title || 'document').replace(/[/\\:*?"<>|]/g, '-').trim() || 'document';
+  return safe + '-' + formatTimestamp(date) + '.html';
+}
+
 // CommonJS export guard — allows Node.js testing without breaking browser use
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { getCollabData, setCollabData, generateCid, truncateQuote, extractLLMContext };
+  module.exports = { getCollabData, setCollabData, generateCid, truncateQuote, extractLLMContext, formatTimestamp, suggestSaveFilename };
 }
