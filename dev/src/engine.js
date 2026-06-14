@@ -121,9 +121,12 @@
         setCollabData(document, data);
       }
 
-      if (!fileHandle) {
+      const isFirstSave = !fileHandle;
+      if (isFirstSave) {
+        const title = getCollabData(document)?.meta?.title || '';
         fileHandle = await window.showSaveFilePicker({
-          suggestedName: (getCollabData(document)?.meta?.title || 'document') + '.html',
+          suggestedName: suggestSaveFilename(title),
+          startIn: 'documents',
           types: [{ description: 'html-collab documents', accept: { 'text/html': ['.html'] } }],
         });
       }
@@ -132,6 +135,12 @@
       await writable.close();
       setStatus('saved');
       isDirty = false;
+
+      if (isFirstSave) {
+        header.title.textContent = fileHandle.name;
+        document.title = fileHandle.name + ' — html-collab';
+        header.btnSave.textContent = 'Save';
+      }
     } catch (err) {
       if (err.name === 'AbortError') return; // user cancelled picker — silent no-op
       console.error('[html-collab] Save failed:', err);
