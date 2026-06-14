@@ -37,6 +37,7 @@ Plain HTML output should be well-structured, self-contained, and styled — a do
 **Steps:**
 
 1. Start with the content of `skill/assets/template.html` as your base structure. If you do not have local access to this file, do not fetch it automatically — instead, ask the user to install the skill first (`clawhub install html-collab`) or provide the template file directly.
+   - **Output path (Claude Code):** Write the generated file to `~/Documents/html-collab/<filename>-<yyyymmddhhmm>.html`. Create the directory if it does not exist (`mkdir -p ~/Documents/html-collab`). This matches the default folder the browser Save dialog opens in, so all versions stay together.
 2. Fill `<article id="collab-content">` with semantic HTML:
    - Use `<h1>` for the document title, `<h2>` for sections, `<p>` for paragraphs, `<ul>`/`<li>` for lists.
 3. Assign a `data-cid` attribute to **every** block element. Rules:
