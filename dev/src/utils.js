@@ -100,6 +100,7 @@ function extractLLMContext(data) {
  */
 function formatTimestamp(date) {
   const d = date instanceof Date ? date : new Date();
+  if (isNaN(d.getTime())) throw new RangeError('formatTimestamp: invalid Date');
   return d.getFullYear().toString()
     + String(d.getMonth() + 1).padStart(2, '0')
     + String(d.getDate()).padStart(2, '0')
@@ -114,7 +115,7 @@ function formatTimestamp(date) {
  * @returns {string} - filename in format '<safe-title>-<yyyymmddhhmm>.html'
  */
 function suggestSaveFilename(title, date) {
-  const safe = (title || 'document').replace(/[/\\:*?"<>|]/g, '-').trim() || 'document';
+  const safe = (title || '').replace(/[/\\:*?"<>|]+/g, '-').replace(/^-+|-+$/g, '').trim() || 'document';
   return safe + '-' + formatTimestamp(date) + '.html';
 }
 

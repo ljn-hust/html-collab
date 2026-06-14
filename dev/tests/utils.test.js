@@ -142,3 +142,8 @@ test('suggestSaveFilename uses "document" as fallback for empty title', () => {
   const d = new Date(2026, 5, 7, 14, 30);
   assert.equal(suggestSaveFilename('', d), 'document-202606071430.html');
 });
+
+test('suggestSaveFilename falls back to "document" for all-unsafe-char title', () => {
+  const d = new Date(2026, 5, 7, 14, 30);
+  assert.equal(suggestSaveFilename('///', d), 'document-202606071430.html');
+});
