@@ -87,3 +87,5 @@ node --test dev/tests/build.test.js dev/tests/utils.test.js   # 运行测试
 ### 许可证
 
 MIT
+
+<img width="1710" height="894" alt="image" src="https://github.com/user-attachments/assets/fbd07a7d-9970-4c63-a9a2-fd966dad0069" />
