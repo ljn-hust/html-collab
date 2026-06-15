@@ -215,9 +215,9 @@
   }
 
   function startEdit(el) {
-    // Dim all other blocks
+    // Dim all other blocks, but not ancestors of el (they contain el and the bar)
     $('collab-content').querySelectorAll('[data-cid]').forEach(b => {
-      b.classList.toggle('dimmed', b !== el);
+      b.classList.toggle('dimmed', b !== el && !b.contains(el));
     });
     el.classList.add('editing');
     el.contentEditable = 'true';
