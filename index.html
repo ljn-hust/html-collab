@@ -621,9 +621,24 @@ function extractLLMContext(data) {
   return lines.join('\n');
 }
 
+function formatTimestamp(date) {
+  const d = date instanceof Date ? date : new Date();
+  if (isNaN(d.getTime())) throw new RangeError('formatTimestamp: invalid Date');
+  return d.getFullYear().toString()
+    + String(d.getMonth() + 1).padStart(2, '0')
+    + String(d.getDate()).padStart(2, '0')
+    + String(d.getHours()).padStart(2, '0')
+    + String(d.getMinutes()).padStart(2, '0');
+}
+
+function suggestSaveFilename(title, date) {
+  const safe = (title || '').replace(/[/\\:*?"<>|]+/g, '-').replace(/^-+|-+$/g, '').trim() || 'document';
+  return safe + '-' + formatTimestamp(date) + '.html';
+}
+
 // CommonJS export guard — allows Node.js testing without breaking browser use
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { getCollabData, setCollabData, generateCid, truncateQuote, extractLLMContext };
+  module.exports = { getCollabData, setCollabData, generateCid, truncateQuote, extractLLMContext, formatTimestamp, suggestSaveFilename };
 }
 
 
