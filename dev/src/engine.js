@@ -161,8 +161,6 @@
     else el.textContent = '';
   }
 
-  // ── Placeholders for functions added in Tasks 8-11 ────────
-  // Must exist here so init() can call them during Tasks 7-10.
   // ── Render saved state on file load ───────────────────────
   function renderState() {
     const data = getCollabData(document);
@@ -191,21 +189,25 @@
   // ── Inline edit ────────────────────────────────────────────
   function attachEditButtons() {
     const content = $('collab-content');
-    content.querySelectorAll('[data-cid]').forEach(attachEditButton);
 
-    // Also handle auto-CID for blocks without data-cid
+    // Assign auto-CIDs first, so the container check in attachEditButton
+    // sees the complete CID structure
     let autoIdx = 0;
     const BLOCK_TAGS = ['P','SECTION','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE','PRE','TABLE'];
     content.querySelectorAll(BLOCK_TAGS.join(',')).forEach(el => {
       if (!el.dataset.cid) {
         el.dataset.cid = 'auto-' + (++autoIdx);
         console.warn('[html-collab] auto-assigned CID:', el.dataset.cid, el);
-        attachEditButton(el);
       }
     });
+
+    content.querySelectorAll('[data-cid]').forEach(attachEditButton);
   }
 
   function attachEditButton(el) {
+    // Container blocks (e.g. a section holding paragraphs) are not editable:
+    // rewriting their innerHTML would destroy the child blocks' CIDs
+    if (el.querySelector('[data-cid]')) return;
     if (el.querySelector('.collab-edit-btn')) return;
     const btn = document.createElement('button');
     btn.className = 'collab-edit-btn';
@@ -215,6 +217,10 @@
   }
 
   function startEdit(el) {
+    // Remove the edit button while editing — it must not pollute the captured
+    // text and must not be deletable inside the contentEditable block
+    el.querySelector('.collab-edit-btn')?.remove();
+
     // Dim all other blocks, but not ancestors of el (they contain el and the bar)
     $('collab-content').querySelectorAll('[data-cid]').forEach(b => {
       b.classList.toggle('dimmed', b !== el && !b.contains(el));
@@ -222,6 +228,15 @@
     el.classList.add('editing');
     el.contentEditable = 'true';
     el.focus();
+
+    // Snapshot the pre-edit markup so Cancel can restore it exactly
+    el.dataset.editHtml = el.innerHTML;
+
+    // If the block shows diff markup from a previous edit, collapse it to just
+    // the revised text — otherwise the strikethrough original and the "edited"
+    // badge would be captured as part of the new text
+    const revisedSpan = el.querySelector('.collab-revised');
+    if (revisedSpan) el.textContent = revisedSpan.textContent;
 
     // Store original text (from LLM version, not a previous human edit)
     const data = getCollabData(document);
@@ -281,12 +296,12 @@
     el.classList.remove('editing');
     el.innerHTML = `<span class="collab-original">${escapeHtml(original)}</span> <span class="collab-revised">${escapeHtml(revised)}</span><span class="collab-edited-badge">edited</span>`;
 
-    // Refresh edit button (innerHTML wiped the old one)
-    el.querySelector('.collab-edit-btn')?.remove();
+    // Re-attach edit button (removed at startEdit)
     attachEditButton(el);
 
     el.removeEventListener('keydown', el._editKeyHandler);
     delete el._editKeyHandler;
+    delete el.dataset.editHtml;
     bar.remove();
     undimAll();
   }
@@ -294,6 +309,13 @@
   function cancelEdit(el, bar) {
     el.contentEditable = 'false';
     el.classList.remove('editing');
+    // Restore pre-edit content — otherwise abandoned typing would silently
+    // persist in the article and be serialised on the next save
+    if (el.dataset.editHtml !== undefined) {
+      el.innerHTML = el.dataset.editHtml;
+      delete el.dataset.editHtml;
+    }
+    attachEditButton(el);
     el.removeEventListener('keydown', el._editKeyHandler);
     delete el._editKeyHandler;
     delete el.dataset.editOriginal;
@@ -418,9 +440,7 @@
       <div class="collab-comment-quote">${escapeHtml(comment.quote)}</div>
       <div class="collab-comment-body">${escapeHtml(comment.text)}</div>
       ${comment.images.map(img =>
-        img.type === 'base64'
-          ? `<img src="${img.data}" alt="screenshot">`
-          : `<img src="${img.url}" alt="screenshot">`
+        `<img src="${escapeHtml(img.type === 'base64' ? img.data : img.url)}" alt="screenshot">`
       ).join('')}
       <div class="collab-comment-meta">${new Date(comment.timestamp).toLocaleString()}</div>
     `;

@@ -1,12 +1,17 @@
 {
   "name": "html-collab",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "html-collab: single-file HTML format for LLM–human collaborative document editing",
   "type": "commonjs",
   "scripts": {
     "build": "node build.js",
-    "test": "node --test tests/utils.test.js tests/build.test.js"
+    "test": "node --test tests/utils.test.js tests/build.test.js tests/engine.test.js"
   },
   "license": "MIT",
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.10.6"
+  }
 }

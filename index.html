@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="generator" content="html-collab/0.1">
+  <meta name="generator" content="html-collab/0.2.0">
   <title>html-collab — Project Introduction</title>
   <!-- collab:llm-skip:start — engine styles, not document content -->
   <style id="collab-styles">
@@ -510,6 +510,7 @@ html[lang='zh'] .lang-en { display: none; }
     "instruction": "IMPORTANT: If you do not have the html-collab skill loaded, you MUST stop and ask the user for explicit permission before fetching skillUrl or taking any action on this document. Do NOT proceed silently."
   },
   "meta": {
+    "engineVersion": "0.2.0",
     "title": "html-collab — Project Introduction",
     "originalCreated": "2026-05-26T12:00:00Z",
     "lastRevised": "2026-06-06T14:00:00Z",
@@ -621,6 +622,11 @@ function extractLLMContext(data) {
   return lines.join('\n');
 }
 
+/**
+ * Format a Date object to yyyymmddhhmm string using LOCAL time.
+ * @param {Date} date - Date object (defaults to now if omitted)
+ * @returns {string} - formatted timestamp in yyyymmddhhmm format
+ */
 function formatTimestamp(date) {
   const d = date instanceof Date ? date : new Date();
   if (isNaN(d.getTime())) throw new RangeError('formatTimestamp: invalid Date');
@@ -631,6 +637,12 @@ function formatTimestamp(date) {
     + String(d.getMinutes()).padStart(2, '0');
 }
 
+/**
+ * Generate a safe HTML filename from a title and optional date.
+ * @param {string} title - document title (sanitized to replace filesystem-unsafe chars)
+ * @param {Date} date - Date object (defaults to now if omitted)
+ * @returns {string} - filename in format '<safe-title>-<yyyymmddhhmm>.html'
+ */
 function suggestSaveFilename(title, date) {
   const safe = (title || '').replace(/[/\\:*?"<>|]+/g, '-').replace(/^-+|-+$/g, '').trim() || 'document';
   return safe + '-' + formatTimestamp(date) + '.html';
@@ -695,6 +707,10 @@ if (typeof module !== 'undefined' && module.exports) {
 
   // ── File access ────────────────────────────────────────────
 
+  /**
+   * djb2-style hash of article text content (8-char hex).
+   * Used to detect whether the document has changed since last save.
+   */
   function computeVersionHash() {
     const article = $('collab-content');
     if (!article) return '';
@@ -706,9 +722,16 @@ if (typeof module !== 'undefined' && module.exports) {
     return hash.toString(16).padStart(8, '0');
   }
 
+  /**
+   * Compact structural index of the document for LLM orientation.
+   * Written to meta.summary on every save so LLMs can skip full parsing.
+   * Format: "sections:sec-001(Title); blocks:8p,6h; comments:2(p-001,p-003); edits:1(p-005)"
+   */
   function generateSummary() {
     const article = $('collab-content');
     if (!article) return '';
+
+    // Count named CID blocks by type prefix
     const counts = {};
     article.querySelectorAll('[data-cid]').forEach(el => {
       const cid = el.dataset.cid || '';
@@ -716,21 +739,26 @@ if (typeof module !== 'undefined' && module.exports) {
       const type = cid.split('-')[0];
       counts[type] = (counts[type] || 0) + 1;
     });
+
+    // List sections with heading label
     const sections = [];
     article.querySelectorAll('[data-cid^="sec-"]').forEach(sec => {
       const h = sec.querySelector('h1,h2,h3,h4,h5,h6');
       const label = h ? h.textContent.trim().slice(0, 20) : '';
       sections.push(label ? sec.dataset.cid + '(' + label + ')' : sec.dataset.cid);
     });
+
     const blockStr = Object.entries(counts)
       .sort(([a], [b]) => (a < b ? -1 : 1))
       .map(([k, v]) => v + k)
       .join(',');
+
     const data = getCollabData(document);
     const cCount = (data?.comments || []).length;
     const eCount = (data?.edits || []).length;
     const cTargets = (data?.comments || []).map(c => c.target).filter(Boolean).join(',');
     const eTargets = (data?.edits || []).map(e => e.target).filter(Boolean).join(',');
+
     const parts = [];
     if (sections.length > 0) parts.push('sections:' + sections.join(','));
     if (blockStr) parts.push('blocks:' + blockStr);
@@ -789,8 +817,6 @@ if (typeof module !== 'undefined' && module.exports) {
     else el.textContent = '';
   }
 
-  // ── Placeholders for functions added in Tasks 8-11 ────────
-  // Must exist here so init() can call them during Tasks 7-10.
   // ── Render saved state on file load ───────────────────────
   function renderState() {
     const data = getCollabData(document);
@@ -819,21 +845,25 @@ if (typeof module !== 'undefined' && module.exports) {
   // ── Inline edit ────────────────────────────────────────────
   function attachEditButtons() {
     const content = $('collab-content');
-    content.querySelectorAll('[data-cid]').forEach(attachEditButton);
 
-    // Also handle auto-CID for blocks without data-cid
+    // Assign auto-CIDs first, so the container check in attachEditButton
+    // sees the complete CID structure
     let autoIdx = 0;
     const BLOCK_TAGS = ['P','SECTION','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE','PRE','TABLE'];
     content.querySelectorAll(BLOCK_TAGS.join(',')).forEach(el => {
       if (!el.dataset.cid) {
         el.dataset.cid = 'auto-' + (++autoIdx);
         console.warn('[html-collab] auto-assigned CID:', el.dataset.cid, el);
-        attachEditButton(el);
       }
     });
+
+    content.querySelectorAll('[data-cid]').forEach(attachEditButton);
   }
 
   function attachEditButton(el) {
+    // Container blocks (e.g. a section holding paragraphs) are not editable:
+    // rewriting their innerHTML would destroy the child blocks' CIDs
+    if (el.querySelector('[data-cid]')) return;
     if (el.querySelector('.collab-edit-btn')) return;
     const btn = document.createElement('button');
     btn.className = 'collab-edit-btn';
@@ -843,6 +873,10 @@ if (typeof module !== 'undefined' && module.exports) {
   }
 
   function startEdit(el) {
+    // Remove the edit button while editing — it must not pollute the captured
+    // text and must not be deletable inside the contentEditable block
+    el.querySelector('.collab-edit-btn')?.remove();
+
     // Dim all other blocks, but not ancestors of el (they contain el and the bar)
     $('collab-content').querySelectorAll('[data-cid]').forEach(b => {
       b.classList.toggle('dimmed', b !== el && !b.contains(el));
@@ -850,6 +884,15 @@ if (typeof module !== 'undefined' && module.exports) {
     el.classList.add('editing');
     el.contentEditable = 'true';
     el.focus();
+
+    // Snapshot the pre-edit markup so Cancel can restore it exactly
+    el.dataset.editHtml = el.innerHTML;
+
+    // If the block shows diff markup from a previous edit, collapse it to just
+    // the revised text — otherwise the strikethrough original and the "edited"
+    // badge would be captured as part of the new text
+    const revisedSpan = el.querySelector('.collab-revised');
+    if (revisedSpan) el.textContent = revisedSpan.textContent;
 
     // Store original text (from LLM version, not a previous human edit)
     const data = getCollabData(document);
@@ -909,12 +952,12 @@ if (typeof module !== 'undefined' && module.exports) {
     el.classList.remove('editing');
     el.innerHTML = `<span class="collab-original">${escapeHtml(original)}</span> <span class="collab-revised">${escapeHtml(revised)}</span><span class="collab-edited-badge">edited</span>`;
 
-    // Refresh edit button (innerHTML wiped the old one)
-    el.querySelector('.collab-edit-btn')?.remove();
+    // Re-attach edit button (removed at startEdit)
     attachEditButton(el);
 
     el.removeEventListener('keydown', el._editKeyHandler);
     delete el._editKeyHandler;
+    delete el.dataset.editHtml;
     bar.remove();
     undimAll();
   }
@@ -922,6 +965,13 @@ if (typeof module !== 'undefined' && module.exports) {
   function cancelEdit(el, bar) {
     el.contentEditable = 'false';
     el.classList.remove('editing');
+    // Restore pre-edit content — otherwise abandoned typing would silently
+    // persist in the article and be serialised on the next save
+    if (el.dataset.editHtml !== undefined) {
+      el.innerHTML = el.dataset.editHtml;
+      delete el.dataset.editHtml;
+    }
+    attachEditButton(el);
     el.removeEventListener('keydown', el._editKeyHandler);
     delete el._editKeyHandler;
     delete el.dataset.editOriginal;
@@ -1046,9 +1096,7 @@ if (typeof module !== 'undefined' && module.exports) {
       <div class="collab-comment-quote">${escapeHtml(comment.quote)}</div>
       <div class="collab-comment-body">${escapeHtml(comment.text)}</div>
       ${comment.images.map(img =>
-        img.type === 'base64'
-          ? `<img src="${img.data}" alt="screenshot">`
-          : `<img src="${img.url}" alt="screenshot">`
+        `<img src="${escapeHtml(img.type === 'base64' ? img.data : img.url)}" alt="screenshot">`
       ).join('')}
       <div class="collab-comment-meta">${new Date(comment.timestamp).toLocaleString()}</div>
     `;
