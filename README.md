@@ -1,5 +1,9 @@
 # html-collab
 
+**▶ Live demo: [ljn-hust.github.io/html-collab](https://ljn-hust.github.io/html-collab/)** — the demo page *is* an html-collab document; open it and try commenting and editing right away.
+
+![html-collab demo: hover to edit a paragraph, confirm to get a tracked diff, select text to comment — all inside one HTML file](docs/demo.gif)
+
 [English](#english) · [中文](#中文)
 
 ---
